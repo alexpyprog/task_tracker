@@ -1,8 +1,12 @@
-from sqlalchemy import select, update, exists
+from sqlalchemy import select, update, exists, delete
+from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.db.models import User
 from app.core.enums import UserStatus
+from app.logger.file_logger import CustomLogger
+
+logger = CustomLogger('user_dao')
 
 
 class UserDAO:
@@ -65,7 +69,7 @@ class UserDAO:
         full_name: str,
         email: str,
         phone: str,
-        hashed_password: str,
+        hashed_password: bytes,
         group_id: int,
         organization_id: int | None = None,
     ) -> User:
@@ -201,3 +205,20 @@ class UserDAO:
 
         result = await session.execute(stmt)
         return list(result.scalars())
+
+
+    async def delete(
+            self,
+            session: AsyncSession,
+            *,
+            user_id: int
+    ) -> bool:
+        try:
+            stmt = delete(User).where(User.id==user_id)
+            await session.execute(stmt)
+            await session.commit()
+        except SQLAlchemyError as e:
+            logger.error(f'{e}')
+            return False
+        return True
+

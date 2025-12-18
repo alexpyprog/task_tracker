@@ -17,7 +17,7 @@ class User(Base):
     full_name: Mapped[str] = mapped_column(String)
     email: Mapped[str] = mapped_column(String)
     phone: Mapped[str] = mapped_column(String)
-    hashed_password: Mapped[str] = mapped_column(String)
+    hashed_password: Mapped[bytes] = mapped_column()
     profile_photo_path: Mapped[str] = mapped_column(String, nullable=True)
     verified: Mapped[bool] = mapped_column(Boolean, default=False)
 
@@ -26,7 +26,7 @@ class User(Base):
         ForeignKey("organizations.id"),
         nullable=True
     )
-    group_id: Mapped[int] = mapped_column(Integer, ForeignKey("groups.id"))
+    group_id: Mapped[int] = mapped_column(Integer, ForeignKey("groups.id"), nullable=True)
     user_status: Mapped[UserStatus] = mapped_column(Enum(UserStatus), default=UserStatus.base_user)
 
     created_at: Mapped[datetime] = mapped_column(DateTime, default=func.now())
@@ -36,8 +36,8 @@ class User(Base):
 class Task(Base):
     __tablename__ = 'tasks'
 
-    id: Mapped[str] = mapped_column(
-        String, primary_key=True, default=lambda: str(uuid.uuid4())
+    id: Mapped[int] = mapped_column(
+        Integer, primary_key=True, default=lambda: str(uuid.uuid4())
     )
 
     title: Mapped[str] = mapped_column(String, nullable=False, default='New task')

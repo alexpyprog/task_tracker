@@ -39,6 +39,11 @@ async def get_db() -> AsyncIterator[AsyncSession]:
             raise
 
 
+async def init_db():
+    async with engine.begin() as conn:
+        await conn.run_sync(Base.metadata.create_all)
+
+
 class Base(AsyncAttrs, DeclarativeBase):
     """Базовый класс для создания моделей в БД"""
 

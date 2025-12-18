@@ -3,7 +3,10 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from starlette.responses import RedirectResponse
 
+from app.api.endpoints.auth import auth_rt
+from app.api.endpoints.users import users_rt
 from app.core.settings import settings
+from app.db.base import init_db
 
 app = FastAPI()
 
@@ -14,8 +17,16 @@ app.add_middleware(
     allow_headers=settings.allow_headers,
 )
 
+app.include_router(users_rt)
+app.include_router(auth_rt)
 
-@app.get('/')
+
+@app.on_event("startup")
+async def on_startup():
+    await init_db()
+
+
+@app.get('/', include_in_schema=False)
 async def root():
     return RedirectResponse(url='/docs', status_code=303)
 
