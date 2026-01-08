@@ -1,8 +1,7 @@
+from datetime import datetime, timedelta, timezone
+
 import pytest
 from httpx import AsyncClient
-from datetime import datetime, timedelta, timezone
-from app.db.models import Task
-from app.core.enums import TaskStatus
 
 
 class TestTasksAPI:

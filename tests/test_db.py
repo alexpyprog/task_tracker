@@ -4,7 +4,6 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.db.models import User, Task
 from app.core.enums import TaskStatus
-from app.utils.pwd_utils import verify_password
 
 
 class TestDatabase:

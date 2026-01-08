@@ -1,7 +1,7 @@
 import factory
 from datetime import datetime, timedelta, timezone
-from app.db.models import User, Task, Organization, Group, TaskPermissionModel
-from app.core.enums import UserStatus, TaskStatus, TaskPermission
+from app.db.models import User, Task
+from app.core.enums import UserStatus, TaskStatus
 from app.utils.pwd_utils import hash_password
 
 

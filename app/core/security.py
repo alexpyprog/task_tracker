@@ -12,16 +12,6 @@ from app.utils.jwt_utils import public_key
 
 logger = CustomLogger('security')
 
-# def get_creds():
-#     try:
-#         security = HTTPBearer()
-#         return security()
-#     except HTTPException:
-#         raise HTTPException(
-#         status_code=status.HTTP_401_UNAUTHORIZED,
-#         detail="Could not validate credentials",
-#         headers={"WWW-Authenticate": "Bearer"},
-#     )
 security = HTTPBearer(auto_error=False)
 
 async def get_current_user(
