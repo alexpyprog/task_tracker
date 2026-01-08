@@ -25,7 +25,7 @@ class Settings:
     access_token_expire = timedelta(minutes=30)
     refresh_token_expire = timedelta(days=30)
 
-    allow_origins: list[str] = json.loads(os.getenv("ALLOWED_ORIGINS", "[]"))
+    allow_origins: list[str] = ["*"]
     allow_methods: list[str] = ["*"]
     allow_headers: list[str] = ["*"]
 
