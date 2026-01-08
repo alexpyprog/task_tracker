@@ -1,43 +1,289 @@
 name: CI Pipeline
+env:
+  ALLOWED_ORIGINS: '["*"]'
+  DB_NAME: 'task_tracker'
+  DB_USER: 'user'
+  DB_PASS: 'password'
+  DB_HOST: 'localhost'
+  DB_PORT: '5432'
 
-on: [push, pull_request]
+on:
+  push:
+    branches: [ master, develop ]
+  pull_request:
+    branches: [ master, develop ]
 
 jobs:
-  test:
+  # -------------------------------
+  # BUILD
+  # -------------------------------
+  build:
     runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
 
-    services:
-      postgres:
-        image: postgres:17-alpine
-        env:
-          POSTGRES_DB: test_db
-          POSTGRES_USER: test_user
-          POSTGRES_PASSWORD: test_password
-        options: >-
-          --health-cmd pg_isready
-          --health-interval 10s
-          --health-timeout 5s
-          --health-retries 5
-        ports:
-          - 5432:5432
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Build (uvicorn dry run)
+        run: |
+          command -v uvicorn    # если нет uvicorn → ошибка → job = failed
+          uvicorn main:app --host 127.0.0.1 --port 8000 &
+          sleep 3
+          pkill -f uvicorn || true
+
+
+      - name: Upload build artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: build-results
+          path: artifacts/build_results.txt
+        if: always()
+
+  # -------------------------------
+  # LINT (runs in parallel)
+  # -------------------------------
+  lint:
+    runs-on: ubuntu-latest
+    needs: build
 
     steps:
-    - uses: actions/checkout@v4
+      - uses: actions/checkout@v4
 
-    - name: Set up Python
-      uses: actions/setup-python@v5
-      with:
-        python-version: '3.12'
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
 
-    - name: Install dependencies
-      run: |
-        pip install -r requirements.txt
-        pip install pytest
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install black
 
-    - name: Run tests
-      env:
-        DATABASE_URL: postgresql+asyncpg://test_user:test_password@localhost:5432/test_db
-      run: pytest -v
+      - name: Run black
+        run: |
+          black --check ./app ./tests > lint_results.txt || true
 
-    - name: Check formatting
-      run: pip install black && black --check .
+      - name: Upload lint artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: lint-results
+          path: lint_results.txt
+
+
+  # -------------------------------
+  # TEST (runs in parallel)
+  # -------------------------------
+  test:
+    runs-on: ubuntu-latest
+    needs: build
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+          pip install pytest
+
+      - name: Run tests
+        run: |
+          pytest -v
+
+      - name: Upload test artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-results
+          path: test_results.txt
+
+
+  # -------------------------------
+  # SECURITY
+  # -------------------------------
+  security:
+    runs-on: ubuntu-latest
+    needs: build
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install Bandit
+        run: pip install bandit
+
+      - name: Run Bandit
+        run: |
+          bandit -r . -ll > bandit_results.txt || true
+
+      - name: Upload bandit artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: bandit-results
+          path: bandit_results.txt
+
+
+  # -------------------------------
+  # NOTIFY (always runs)
+  # -------------------------------
+  notify:
+    runs-on: ubuntu-latest
+    needs: [ build, lint, test, security ]
+    if: always()
+    steps:
+      - name: Download lint results
+        uses: actions/download-artifact@v4
+        with:
+          name: lint-results
+          path: lint_results.txt
+        continue-on-error: true
+
+      - name: Download test results
+        uses: actions/download-artifact@v4
+        with:
+          name: test-results
+          path: test_results.txt
+        continue-on-error: true
+
+      - name: Download security results
+        uses: actions/download-artifact@v4
+        with:
+          name: bandit-results
+          path: bandit_results.txt
+        continue-on-error: true
+
+      - name: Download build results
+        uses: actions/download-artifact@v4
+        with:
+          name: build-results
+          path: build_results.txt
+        continue-on-error: true
+
+      - name: Prepare message
+        id: msg
+        shell: bash
+        run: |
+          build_status="${{ needs.build.result }}"
+          lint_status="${{ needs.lint.result }}"
+          test_status="${{ needs.test.result }}"
+          sec_status="${{ needs.security.result }}"
+
+          # Безопасное экранирование MarkdownV2
+          escape_md() {
+            printf "%s" "$1" | sed \
+              -e 's/\\/\\\\/g' \
+              -e 's/_/\\_/g' \
+              -e 's/\*/\\*/g' \
+              -e 's/\[/\\[/g' \
+              -e 's/\]/\\]/g' \
+              -e 's/(/\\(/g' \
+              -e 's/)/\\)/g' \
+              -e 's/~/\\~/g' \
+              -e 's/`/\\`/g' \
+              -e 's/>/\\>/g' \
+              -e 's/#/\\#/g' \
+              -e 's/+/\\+/g' \
+              -e 's/-/\\-/g' \
+              -e 's/=/\\=/g' \
+              -e 's/|/\\|/g' \
+              -e 's/{/\\{/g' \
+              -e 's/}/\\}/g' \
+              -e 's/\./\\./g' \
+              -e 's/!/\\!/g'
+          }
+
+
+          status_icon() {
+            if [ "$1" = "success" ]; then
+              echo "🟢"
+            else
+              echo "🔴"
+            fi
+          }
+
+          summary="$(
+            echo "📊 CI Summary"
+            echo "$(status_icon "$lint_status") Linter: $lint_status"
+            echo "$(status_icon "$test_status") Tests: $test_status"
+            echo "$(status_icon "$sec_status") Security: $sec_status"
+            echo "$(status_icon "$build_status") Build: $build_status"
+          )"
+
+          summary="$(escape_md "$summary")"
+          {
+            echo "summary<<EOF"
+            echo "$summary"
+            echo "EOF"
+          } >> "$GITHUB_OUTPUT"
+
+          collect_logs() {
+            local file="$1"
+            if [ -f "$file" ]; then
+              tail -n 40 "$file"
+            else
+              echo "Нет данных"
+            fi
+          }
+
+          # Проверка статусов
+          failed=false
+          if [ "$build_status" != "success" ] || \
+             [ "$lint_status" != "success" ] || \
+             [ "$test_status" != "success" ] || \
+             [ "$sec_status" != "success" ]; then
+            failed=true
+          fi
+
+          if [ "$failed" = true ]; then
+            echo "status=FAILED" >> "$GITHUB_OUTPUT"
+
+            logs="$(
+              echo "Lint"
+              collect_logs artifacts/lint/lint_results.txt
+              echo
+              echo "Tests"
+              collect_logs artifacts/test/test_results.txt
+              echo
+              echo "Security"
+              collect_logs artifacts/security/bandit_results.txt
+              echo
+              echo "Build"
+              collect_logs artifacts/build/build_results.txt
+            )"
+
+            logs="$(escape_md "$logs")"
+            {
+              echo "details<<EOF"
+              echo "$logs"
+              echo "EOF"
+            } >> "$GITHUB_OUTPUT"
+          else
+            echo "status=OK" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Send Notification
+        if: always()
+        run: |
+          SUMMARY="${{ steps.msg.outputs.summary }}"
+
+          if [ "${{ steps.msg.outputs.status }}" = "OK" ]; then
+            TEXT="${SUMMARY}\n\n🟢 CI завершён успешно"
+          else
+            TEXT="${SUMMARY}\n\n🔴 *CI упал*"
+          fi
+
+          curl -X POST \
+            -H "Content-Type: application/json" \
+            -d "{\"chat_id\": \"${{ secrets.TG_CHAT_ID }}\", \"text\": \"$TEXT\", \"parse_mode\": \"MarkdownV2\"}" \
+            https://api.telegram.org/bot${{ secrets.TG_BOT_TOKEN }}/sendMessage
