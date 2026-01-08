@@ -6,7 +6,7 @@ from pathlib import Path
 
 from dotenv import load_dotenv
 
-# определяем базовую директорию проекта
+# определяем базовую директорию проектаы
 BASE_DIR = Path(__file__).resolve().parent.parent.parent
 
 if os.path.exists(os.path.join(BASE_DIR, ".env.local")):
