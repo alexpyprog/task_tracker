@@ -1,4 +1,5 @@
 import ast
+import json
 import os
 from datetime import timedelta
 from pathlib import Path
@@ -24,7 +25,7 @@ class Settings:
     access_token_expire = timedelta(minutes=30)
     refresh_token_expire = timedelta(days=30)
 
-    allow_origins: list[str] = ast.literal_eval(os.getenv("ALLOWED_ORIGINS"))
+    allow_origins: list[str] = json.loads(os.getenv("ALLOWED_ORIGINS", "[]"))
     allow_methods: list[str] = ["*"]
     allow_headers: list[str] = ["*"]
 
