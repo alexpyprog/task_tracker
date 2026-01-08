@@ -35,7 +35,7 @@ def _create_token(
         "exp": now + expires_delta,
     }
 
-    return jwt.encode(payload, settings.private_key, algorithm=settings.algorithm)
+    return jwt.encode(payload, private_key, algorithm=settings.algorithm)
 
 
 def create_access_token(user_id: int) -> str:
@@ -58,7 +58,7 @@ def decode_token(token: str) -> dict:
     try:
         return jwt.decode(
             token,
-            settings.public_key,
+            public_key,
             algorithms=[settings.algorithm],
         )
     except JWTError:
