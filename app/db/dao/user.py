@@ -73,6 +73,9 @@ class UserDAO:
         group_id: int,
         organization_id: int | None = None,
     ) -> User:
+        existing_user = await self.get_by_username(session, username)
+        if existing_user:
+            raise
         user = User(
             username=username,
             full_name=full_name,
@@ -99,6 +102,7 @@ class UserDAO:
         profile_photo_path: str | None = None,
     ) -> None:
         values = {}
+        existing_user = await self.get_by_id(session, user_id)
 
         if full_name is not None:
             values["full_name"] = full_name
@@ -108,15 +112,19 @@ class UserDAO:
             values["profile_photo_path"] = profile_photo_path
 
         if not values:
-            return
+            return existing_user
 
         stmt = (
             update(User)
             .where(User.id == user_id)
             .values(**values)
+            .returning(User)
         )
-        await session.execute(stmt)
+        result = await session.execute(stmt)
         await session.commit()
+        user = result.scalar_one_or_none()
+        return user
+
 
     async def set_verified(
         self,
@@ -214,6 +222,9 @@ class UserDAO:
             user_id: int
     ) -> bool:
         try:
+            user = await self.get_by_id(session, user_id)
+            if not user:
+                return False
             stmt = delete(User).where(User.id==user_id)
             await session.execute(stmt)
             await session.commit()

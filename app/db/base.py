@@ -16,7 +16,6 @@ from app.core.settings import Settings
 from app.logger.file_logger import CustomLogger
 
 
-
 logger = CustomLogger("base_logger")
 
 engine = create_async_engine(url=Settings.db_url, echo=False, pool_pre_ping=True)

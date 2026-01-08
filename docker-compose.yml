@@ -19,10 +19,28 @@ services:
     volumes:
       - postgres_data:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U user -d miniapp_donates"]
+      test: ["CMD-SHELL", "pg_isready -U user -d task_tracker"]
       interval: 5s
       timeout: 5s
       retries: 5
+
+  backend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: task-tracker-backend
+    environment:
+      DATABASE_URL: postgresql+asyncpg://user:password@postgres:5432/task_tracker
+    networks:
+      - app-network
+    ports:
+      - "8000:8000"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    volumes:
+      - ./backend:/app
+    restart: unless-stopped
 
 
 volumes:

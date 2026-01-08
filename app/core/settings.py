@@ -1,5 +1,6 @@
 import ast
 import os
+from datetime import timedelta
 from pathlib import Path
 
 from dotenv import load_dotenv
@@ -14,8 +15,14 @@ else:
 
 
 class Settings:
-    # google_credentials = (BASE_DIR / os.getenv("GOOGLE_CREDENTIALS_JSON")).resolve()
-    # sheet_id = os.getenv("SHEET_ID")
+
+    private_key = os.path.join(BASE_DIR, 'app', 'core', 'security', 'jwt_private.pem')
+    public_key = os.path.join(BASE_DIR, 'app', 'core', 'security', 'jwt_public.pem')
+
+    algorithm = 'RS256'
+
+    access_token_expire = timedelta(minutes=30)
+    refresh_token_expire = timedelta(days=30)
 
     allow_origins: list[str] = ast.literal_eval(os.getenv("ALLOWED_ORIGINS"))
     allow_methods: list[str] = ["*"]

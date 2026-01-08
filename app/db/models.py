@@ -8,7 +8,7 @@ from app.core.enums import UserStatus, TaskStatus, ContentTypes, TaskPermission,
 from app.db.base import Base
 
 
-class User(Base):
+class User(Base):  # Done
     __tablename__ = "users"
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
@@ -36,20 +36,20 @@ class User(Base):
 class Task(Base):
     __tablename__ = 'tasks'
 
-    id: Mapped[int] = mapped_column(
-        Integer, primary_key=True, default=lambda: str(uuid.uuid4())
+    id: Mapped[str] = mapped_column(
+        String, primary_key=True, default=lambda: str(uuid.uuid4())
     )
 
     title: Mapped[str] = mapped_column(String, nullable=False, default='New task')
     description: Mapped[str] = mapped_column(String, nullable=True)
-    deadline: Mapped[DateTime] = mapped_column(DateTime, nullable=True)
+    deadline: Mapped[DateTime] = mapped_column(DateTime(timezone=True), nullable=True)
     created_by: Mapped[int] = mapped_column(Integer, ForeignKey('users.id'))
     worker_id: Mapped[int] = mapped_column(Integer, ForeignKey('users.id'))
     status: Mapped[TaskStatus] = mapped_column(Enum(TaskStatus), default=TaskStatus.created)
 
-    created_at: Mapped[datetime] = mapped_column(DateTime, nullable=True)
-    updated_at: Mapped[datetime] = mapped_column(DateTime, nullable=True)
-    updated_by: Mapped[int] = mapped_column(Integer, ForeignKey('users.id'))
+    created_at: Mapped[datetime] = mapped_column(DateTime, nullable=True, default=func.now())
+    updated_at: Mapped[datetime] = mapped_column(DateTime, nullable=True, onupdate=func.now())
+    updated_by: Mapped[int] = mapped_column(Integer, ForeignKey('users.id'), nullable=True)
 
 
 class Organization(Base):
@@ -84,7 +84,7 @@ class TaskHistory(Base):
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
 
-    task_id: Mapped[int] = mapped_column(Integer, ForeignKey('tasks.id'))
+    task_id: Mapped[str] = mapped_column(String, ForeignKey('tasks.id'))
     old_status: Mapped[TaskStatus] = mapped_column(Enum(TaskStatus))
     new_status: Mapped[TaskStatus] = mapped_column(Enum(TaskStatus))
 
@@ -97,7 +97,7 @@ class FileAttachment(Base):
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
 
-    task_id: Mapped[int] = mapped_column(Integer, ForeignKey('tasks.id'))
+    task_id: Mapped[str] = mapped_column(String, ForeignKey('tasks.id'))
     filename: Mapped[str] = mapped_column(String, nullable=False)
     content_type: Mapped[str] = mapped_column(Enum(ContentTypes), nullable=False)
     file_path: Mapped[str] = mapped_column(String, nullable=False)
