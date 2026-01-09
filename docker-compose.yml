@@ -1,8 +1,9 @@
 networks:
   app-network:
     driver: bridge
-  postgres:
-    driver: bridge
+
+volumes:
+  postgres_data:
 
 services:
   pg:
@@ -13,7 +14,7 @@ services:
       POSTGRES_USER: "user"
       POSTGRES_PASSWORD: "password"
     networks:
-      - postgres
+      - app-network  # Подключаем к той же сети
     ports:
       - "5432:5432"
     volumes:
@@ -30,18 +31,15 @@ services:
       dockerfile: Dockerfile
     container_name: task-tracker-backend
     environment:
-      DATABASE_URL: postgresql+asyncpg://user:password@postgres:5432/task_tracker
+      DATABASE_URL: postgresql+asyncpg://user:password@pg:5432/task_tracker  # Используем pg как hostname
+      ALLOWED_ORIGINS: '["*"]'
+      JWT_ALGORITHM: RS256
+      JWT_EXPIRATION_MINUTES: 30
     networks:
-      - app-network
+      - app-network  # Та же сеть
     ports:
       - "8000:8000"
     depends_on:
-      postgres:
+      pg:
         condition: service_healthy
-    volumes:
-      - ./backend:/app
     restart: unless-stopped
-
-
-volumes:
-  postgres_data:

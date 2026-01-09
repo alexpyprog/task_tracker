@@ -2,20 +2,13 @@ FROM python:3.12-slim
 
 WORKDIR /app
 
-# Копируем зависимости и устанавливаем их
-COPY requirements.txt .
-
-# Устанавливаем зависимости напрямую (без --user)
+COPY ./requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Копируем исходный код
+WORKDIR /app
 COPY . .
+COPY ./entrypoint.sh /app/entrypoint.sh
 
-# Копируем entrypoint (если он нужен)
-COPY entrypoint.sh .
+RUN chmod +x /app/entrypoint.sh
 
-# Делаем entrypoint исполняемым
-RUN chmod +x entrypoint.sh
-
-# Указываем entrypoint
 ENTRYPOINT ["/app/entrypoint.sh"]
