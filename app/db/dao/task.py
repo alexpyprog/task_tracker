@@ -219,13 +219,18 @@ class TaskDAO:
             self,
             session: AsyncSession,
             data: Dict[str, Any]
-    ) -> Task:
+    ) -> Optional[Task]:
         """Создать задачу из словаря данных"""
-        task = Task(**data)
-        session.add(task)
-        await session.commit()
-        await session.refresh(task)
-        return task
+        try:
+            task = Task(**data)
+            session.add(task)
+            await session.commit()
+            await session.refresh(task)
+            return task
+        except SQLAlchemyError as e:
+            logger.error(f'{e}')
+            await session.rollback()
+            return None
 
     # ---------- update ----------
 

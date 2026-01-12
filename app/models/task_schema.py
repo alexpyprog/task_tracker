@@ -24,12 +24,17 @@ class TaskUpdate(BaseModel):
     updated_by: Optional[int] = None
 
 
-class TaskOut(TaskBase):
+class TaskOut(BaseModel):
     id: str
+    title: str
+    description: Optional[str]
+    deadline: Optional[datetime] = None
+    worker_id: int
+    status: TaskStatus = TaskStatus.created
     created_by: int
     created_at: datetime
-    updated_at: Optional[datetime] = None
     updated_by: Optional[int] = None
+    updated_at: Optional[datetime] = None
 
     model_config = ConfigDict(from_attributes=True)
 

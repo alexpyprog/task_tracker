@@ -6,7 +6,6 @@ from starlette.responses import RedirectResponse
 from app.api.endpoints.auth import auth_rt
 from app.api.endpoints.tasks import tasks_rt
 from app.api.endpoints.users import users_rt
-from app.core.settings import settings
 from app.db.base import init_db
 
 app = FastAPI()

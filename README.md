@@ -205,16 +205,16 @@ phone: str
 hashed_password: bytes
 verified: bool = False
 user_status: UserStatus (base_user, manager, admin)
-organization_id: int?  # Внешний ключ
-group_id: int?         # Внешний ключ
+organization_id: int  # Внешний ключ
+group_id: int         # Внешний ключ
 ```
 
 ### Задача (Task)
 ```python
 id: UUID (строка)
 title: str
-description: str?
-deadline: datetime?
+description: str
+deadline: datetime
 created_by: int        # Внешний ключ (User)
 worker_id: int         # Внешний ключ (User)
 status: TaskStatus (created, in_progress, completed, cancelled)
@@ -251,32 +251,42 @@ permission: TaskPermission (view, edit, delete, assign, change_status, ...)
 task_tracker/
 ├── app/
 │   ├── api/
-│   │   ├── endpoints/
-│   │   │   ├── auth.py          # Аутентификация
-│   │   │   ├── tasks.py         # Задачи
-│   │   │   ├── users.py         # Пользователи
-│   │   │   └── task_permissions.py  # Права доступа
-│   │   └── schemas/             # Pydantic схемы
-│   │       ├── auth.py
-│   │       ├── task.py
-│   │       └── user.py
+│   │   └── endpoints/
+│   │       ├── auth.py          # Аутентификация
+│   │       ├── tasks.py         # Задачи
+│   │       └── users.py         # Пользователи
 │   ├── core/
 │   │   ├── enums.py             # Enum типы
 │   │   ├── settings.py          # Настройки
-│   │   └── security.py          # Безопасность
+│   │   ├── security.py          # Безопасность
+│   │   └── securuty/
+│   │       ├── jwt_private.pem
+│   │       └── jwt_public.pem
 │   ├── db/
 │   │   ├── models.py            # SQLAlchemy модели
 │   │   ├── base.py              # Базовый класс
-│   │   ├── session.py           # Сессии БД
 │   │   └── dao/                 # Data Access Objects
 │   │       ├── user.py
 │   │       ├── task.py
 │   │       └── task_permission.py
-│   ├── utils/
-│   │   ├── jwt_utils.py         # JWT операции
-│   │   ├── pwd_utils.py         # Хеширование паролей
-│   │   └── permission_utils.py  # Утилиты прав
-│   └── main.py                  # Точка входа
+│   ├── dependencies/             # Инъекции зависимостей
+│   │       ├── task.py
+│   │       ├── user.py
+│   │       └── permissions.py
+│   ├── logger/                   # Логгер для проекта
+│   │       └── file_logger.py
+│   ├── models/                   # Полезные функции
+│   │       ├── jwt_utils.py
+│   │       └── pwd_utils.py
+│   ├── models/                   # Pydantic схемы
+│   │       ├── login_schema.py
+│   │       ├── task_schema.py
+│   │       └── user_schema.py
+│   └── utils/
+│       ├── jwt_utils.py         # JWT операции
+│       ├── pwd_utils.py         # Хеширование паролей
+│       └── permission_utils.py  # Утилиты прав
+│  
 ├── tests/
 │   ├── conftest.py              # Фикстуры pytest
 │   ├── factories.py             # factory-boy фабрики
@@ -285,18 +295,12 @@ task_tracker/
 │   ├── test_users_api.py        # Тесты пользователей
 │   └── test_db.py               # Тесты базы данных
 ├── logs/                        # Логи приложения
-├── scripts/
-│   ├── generate_keys.py         # Генерация JWT ключей
-│   └── init_db.py              # Инициализация БД
-├── docker/
-│   ├── Dockerfile
-│   └── docker-compose.yml
-├── requirements.txt            # Основные зависимости
-├── requirements-dev.txt       # Dev зависимости
-├── pytest.ini                 # Конфигурация pytest
-├── Makefile                   # Команды разработки
-├── .env.example               # Пример переменных окружения
-├── generate_keys.py          # Скрипт генерации ключей
+├── Dockerfile
+├── docker-compose.yml
+├── requirements.txt          # Основные зависимости
+├── pytest.ini                # Конфигурация pytest
+├── .env.example              # Пример переменных окружения
+├── main.py                   # Точка входа
 └── README.md                 # Этот файл
 ```
 
