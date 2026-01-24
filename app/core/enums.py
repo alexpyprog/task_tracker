@@ -12,7 +12,7 @@ class UserStatus(enum.Enum):
     base_user = "base_user"
     admin = "admin"
     manager = "manager"
-    director = "director"
+    director = "director"  # TODO: Убрать эту сущность
 
 
 class ContentTypes(enum.Enum):

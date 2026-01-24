@@ -1,3 +1,5 @@
+from typing import Optional
+
 from sqlalchemy import select, update, exists, delete
 from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -5,6 +7,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.db.models import User
 from app.core.enums import UserStatus
 from app.logger.file_logger import CustomLogger
+from app.utils.pwd_utils import hash_password
 
 logger = CustomLogger('user_dao')
 
@@ -100,6 +103,7 @@ class UserDAO:
         full_name: str | None = None,
         phone: str | None = None,
         profile_photo_path: str | None = None,
+        password: Optional[str] = None,
     ) -> None:
         values = {}
         existing_user = await self.get_by_id(session, user_id)
@@ -110,6 +114,10 @@ class UserDAO:
             values["phone"] = phone
         if profile_photo_path is not None:
             values["profile_photo_path"] = profile_photo_path
+        if password is not None:
+            hashed_password = hash_password(password)
+            values["hashed_password"] = hashed_password
+
 
         if not values:
             return existing_user

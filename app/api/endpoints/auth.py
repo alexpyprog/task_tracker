@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException, status, Body
+from fastapi import APIRouter, Depends, HTTPException, status, Body, FastAPI
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.db.base import get_db
@@ -10,6 +10,9 @@ from app.utils.jwt_utils import create_access_token, create_refresh_token, refre
 from app.utils.pwd_utils import hash_password, verify_password
 
 auth_rt = APIRouter(tags=["Auth"])
+
+def register_router(app: FastAPI):
+    app.include_router(auth_rt)
 
 
 @auth_rt.post(

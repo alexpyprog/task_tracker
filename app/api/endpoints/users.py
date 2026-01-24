@@ -1,6 +1,6 @@
 from typing import Any
 
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, status, FastAPI
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.security import get_current_user
@@ -11,6 +11,9 @@ from app.dependencies.user import get_user_dao
 from app.models.user_schema import *
 
 users_rt = APIRouter(prefix='/users', tags=['User'])
+
+def register_router(app: FastAPI):
+    app.include_router(users_rt)
 
 
 @users_rt.get(
@@ -112,6 +115,7 @@ async def update_user(
         full_name=data.full_name,
         phone=data.phone,
         profile_photo_path=data.profile_photo_path,
+        password=data.password
     )
 
     if user is None:

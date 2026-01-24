@@ -1,6 +1,6 @@
 from typing import List, Optional, Any, Dict
 
-from fastapi import APIRouter, Depends, HTTPException, status, Query
+from fastapi import APIRouter, Depends, HTTPException, status, Query, FastAPI
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.enums import TaskPermission
@@ -14,6 +14,9 @@ from app.dependencies.task import get_task_dao
 from app.models.task_schema import TaskOut, TaskCreate, TaskListOut, TaskUpdate
 
 tasks_rt = APIRouter(prefix="/tasks", tags=["Tasks"])
+
+def register_router(app: FastAPI):
+    app.include_router(tasks_rt)
 
 
 @tasks_rt.get(

@@ -1,14 +1,23 @@
+from contextlib import asynccontextmanager
+
 import uvicorn
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from starlette.responses import RedirectResponse
 
-from app.api.endpoints.auth import auth_rt
-from app.api.endpoints.tasks import tasks_rt
-from app.api.endpoints.users import users_rt
+from app.api.endpoints import setup_routers
 from app.db.base import init_db
 
-app = FastAPI()
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    setup_routers(app)
+    await init_db()
+    yield
+
+
+app = FastAPI(lifespan=lifespan)
+
 
 app.add_middleware(
     CORSMiddleware,
@@ -17,15 +26,6 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
-
-app.include_router(users_rt)
-app.include_router(tasks_rt)
-app.include_router(auth_rt)
-
-
-@app.on_event("startup")
-async def on_startup():
-    await init_db()
 
 
 @app.get('/', include_in_schema=False)
