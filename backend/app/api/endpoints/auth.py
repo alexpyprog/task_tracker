@@ -9,7 +9,10 @@ from app.models.user_schema import UserOut, UserCreate
 from app.utils.jwt_utils import create_access_token, create_refresh_token, refresh_access_token, decode_token
 from app.utils.pwd_utils import hash_password, verify_password
 
-auth_rt = APIRouter(tags=["Auth"])
+auth_rt = APIRouter(
+    tags=["Auth"],
+    prefix='/api'
+)
 
 def register_router(app: FastAPI):
     app.include_router(auth_rt)

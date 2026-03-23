@@ -10,7 +10,7 @@ from app.db.models import User
 from app.dependencies.user import get_user_dao
 from app.models.user_schema import *
 
-users_rt = APIRouter(prefix='/users', tags=['User'])
+users_rt = APIRouter(prefix='/api/users', tags=['User'])
 
 def register_router(app: FastAPI):
     app.include_router(users_rt)

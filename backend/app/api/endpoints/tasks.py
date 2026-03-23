@@ -1,4 +1,4 @@
-from typing import List, Optional, Any, Dict
+from typing import List, Optional
 
 from fastapi import APIRouter, Depends, HTTPException, status, Query, FastAPI
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -13,7 +13,7 @@ from app.dependencies.permissions import get_permission_dao
 from app.dependencies.task import get_task_dao
 from app.models.task_schema import TaskOut, TaskCreate, TaskListOut, TaskUpdate
 
-tasks_rt = APIRouter(prefix="/tasks", tags=["Tasks"])
+tasks_rt = APIRouter(prefix="/api/tasks", tags=["Tasks"])
 
 def register_router(app: FastAPI):
     app.include_router(tasks_rt)
@@ -237,11 +237,39 @@ async def update_task(
     # Создатель задачи автоматически имеет все права
     is_creator = task.created_by == current_user.id
 
-    if not (has_edit_permission or is_creator):
-        raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN,
-            detail="You don't have permission to edit this task",
+    update_data = task_update.model_dump(exclude_unset=True)
+
+    # изменение статуса
+    if "status" in update_data and update_data["status"] != task.status:
+        has_status_permission = await permission_dao.has_permission(
+            session=session,
+            task_id=task_id,
+            user_id=current_user.id,
+            permission=TaskPermission.change_status
         )
+
+        if not (has_status_permission or is_creator):
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="You don't have permission to change status",
+            )
+
+    # редактирование основной информации
+    editable_fields = {"title", "description", "deadline"}
+
+    if editable_fields.intersection(update_data.keys()):
+        has_edit_permission = await permission_dao.has_permission(
+            session=session,
+            task_id=task_id,
+            user_id=current_user.id,
+            permission=TaskPermission.edit
+        )
+
+        if not (has_edit_permission or is_creator):
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="You don't have permission to edit this task",
+            )
 
     # 3. Проверка специфических прав для отдельных полей
     if task_update.worker_id is not None and task_update.worker_id != task.worker_id:

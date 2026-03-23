@@ -14,7 +14,7 @@ services:
       POSTGRES_USER: "user"
       POSTGRES_PASSWORD: "password"
     networks:
-      - app-network  # Подключаем к той же сети
+      - app-network
     ports:
       - "5432:5432"
     volumes:
@@ -28,18 +28,42 @@ services:
   backend:
     build:
       context: .
-      dockerfile: Dockerfile
-    container_name: task-tracker-backend
+      dockerfile: backend/Backend.Dockerfile
+    container_name: backend
     environment:
-      DATABASE_URL: postgresql+asyncpg://user:password@pg:5432/task_tracker  # Используем pg как hostname
-      ALLOWED_ORIGINS: '["*"]'
+      DATABASE_URL: postgresql+asyncpg://user:password@pg:5432/task_tracker
+      ALLOWED_ORIGINS: '["http://localhost:3000", "http://frontend:3000"]'  # Добавляем фронтенд
       JWT_ALGORITHM: RS256
       JWT_EXPIRATION_MINUTES: 30
     networks:
-      - app-network  # Та же сеть
+      - app-network
     ports:
       - "8000:8000"
     depends_on:
       pg:
         condition: service_healthy
     restart: unless-stopped
+    volumes:
+      - ./backend:/app  # Для hot-reload в разработке
+      - /app/__pycache__
+
+  frontend:
+    build:
+      context: ./task-tracker-frontend
+      dockerfile: Frontend.Dockerfile
+      args:
+        - REACT_APP_API_URL=http://localhost:8000
+    container_name: frontend
+    environment:
+      - CHOKIDAR_USEPOLLING=true  # Для hot-reload в Docker
+      - WATCHPACK_POLLING=true    # Альтернатива для webpack
+    networks:
+      - app-network
+    ports:
+      - "80:3000"
+    depends_on:
+      - backend
+    restart: unless-stopped
+    volumes:
+      - ./task-tracker-frontend:/app  # Для hot-reload
+      - /app/node_modules              # Исключаем node_modules

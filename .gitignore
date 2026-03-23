@@ -1,6 +1,8 @@
 .venv/
 htmlcov/
 logs/
+backend/logs/
 __pycache__/
 .idea/
 *.pyc
+project.txt
