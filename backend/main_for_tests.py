@@ -3,10 +3,10 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from starlette.responses import RedirectResponse
 
-from app.logger.file_logger import CustomLogger
-from app.api.endpoints.auth import auth_rt
-from app.api.endpoints.users import users_rt
-from app.api.endpoints.tasks import tasks_rt
+from backend.app.logger.file_logger import CustomLogger
+from backend.app.api.endpoints.auth import auth_rt
+from backend.app.api.endpoints.users import users_rt
+from backend.app.api.endpoints.tasks import tasks_rt
 
 logger = CustomLogger('Main')
 
