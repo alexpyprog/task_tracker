@@ -34,7 +34,7 @@ jobs:
       - name: Build (uvicorn dry run)
         run: |
           command -v uvicorn    # если нет uvicorn → ошибка → job = failed
-          uvicorn main:app --host 127.0.0.1 --port 8000 &
+          uvicorn backend.main:app --host 127.0.0.1 --port 8000 &
           sleep 3
           pkill -f uvicorn || true
 

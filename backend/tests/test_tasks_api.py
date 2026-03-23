@@ -20,7 +20,7 @@ class TestTasksAPI:
             "status": "created"
         }
 
-        response = await authenticated_client.post("/tasks/", json=task_data)
+        response = await authenticated_client.post("/api/tasks/", json=task_data)
 
         assert response.status_code == 201
         data = response.json()
@@ -43,7 +43,7 @@ class TestTasksAPI:
             "status": "created"
         }
 
-        response = await authenticated_client.post("/tasks/", json=task_data)
+        response = await authenticated_client.post("/api/tasks/", json=task_data)
 
         assert response.status_code == 400
         data = response.json()
@@ -55,7 +55,7 @@ class TestTasksAPI:
             self, authenticated_client: AsyncClient, test_task
     ):
         """Успешное получение задачи"""
-        response = await authenticated_client.get(f"/tasks/{test_task.id}")
+        response = await authenticated_client.get(f"/api/tasks/{test_task.id}")
 
         assert response.status_code == 200
         data = response.json()
@@ -66,7 +66,7 @@ class TestTasksAPI:
     @pytest.mark.asyncio
     async def test_get_task_not_found(self, authenticated_client: AsyncClient):
         """Получение несуществующей задачи"""
-        response = await authenticated_client.get("/tasks/nonexistent-id")
+        response = await authenticated_client.get("/api/tasks/nonexistent-id")
 
         assert response.status_code == 404
         data = response.json()
@@ -85,7 +85,7 @@ class TestTasksAPI:
         }
 
         response = await authenticated_client.put(
-            f"/tasks/{test_task.id}",
+            f"/api/tasks/{test_task.id}",
             json=update_data
         )
 
@@ -102,7 +102,7 @@ class TestTasksAPI:
         update_data = {"title": "Новое название"}
 
         response = await authenticated_client.put(
-            "/tasks/nonexistent-id",
+            "/api/tasks/nonexistent-id",
             json=update_data
         )
 
@@ -129,7 +129,7 @@ class TestTasksAPI:
         update_data = {"title": "Попытка изменить"}
 
         response = await async_client.put(
-            f"/tasks/{test_task.id}",
+            f"/api/tasks/{test_task.id}",
             json=update_data,
             headers=headers
         )
@@ -143,12 +143,12 @@ class TestTasksAPI:
             self, authenticated_client: AsyncClient, test_task
     ):
         """Успешное удаление задачи"""
-        response = await authenticated_client.delete(f"/tasks/{test_task.id}")
+        response = await authenticated_client.delete(f"/api/tasks/{test_task.id}")
 
         assert response.status_code == 204
 
         # Проверяем, что задача удалена
-        get_response = await authenticated_client.get(f"/tasks/{test_task.id}")
+        get_response = await authenticated_client.get(f"/api/tasks/{test_task.id}")
         assert get_response.status_code == 404
 
     @pytest.mark.asyncio
@@ -169,7 +169,7 @@ class TestTasksAPI:
             db_session.add(task)
         await db_session.commit()
 
-        response = await authenticated_client.get("/tasks/my-tasks")
+        response = await authenticated_client.get("/api/tasks/my-tasks")
 
         assert response.status_code == 200
         data = response.json()
@@ -194,7 +194,7 @@ class TestTasksAPI:
             db_session.add(task)
         await db_session.commit()
 
-        response = await authenticated_client.get("/tasks/created-by-me")
+        response = await authenticated_client.get("/api/tasks/created-by-me")
 
         assert response.status_code == 200
         data = response.json()
@@ -208,7 +208,7 @@ class TestTasksAPI:
     ):
         """Изменение статуса задачи"""
         response = await authenticated_client.put(
-            f"/tasks/{test_task.id}",
+            f"/api/tasks/{test_task.id}",
             json={"status": "completed"}
         )
 

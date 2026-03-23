@@ -8,7 +8,7 @@ from sqlalchemy.pool import StaticPool
 
 from app.core.enums import TaskPermission
 from app.db.models import User, TaskPermissionModel
-from main import app
+from main_for_tests import app
 from app.db.base import get_db, Base
 from app.utils.jwt_utils import create_access_token
 from tests.factories import UserFactory, TaskFactory

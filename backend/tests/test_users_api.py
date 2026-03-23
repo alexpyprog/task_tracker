@@ -15,7 +15,7 @@ class TestUsersAPI:
             self, authenticated_client: AsyncClient, test_user
     ):
         """GET /users/me - получение текущего пользователя"""
-        response = await authenticated_client.get("/users/me")
+        response = await authenticated_client.get("/api/users/me")
 
         assert response.status_code == 200
         data = response.json()
@@ -33,7 +33,7 @@ class TestUsersAPI:
             "phone": "+79991112233"
         }
 
-        response = await authenticated_client.patch(f"/users/{test_user.id}", json=update_data)
+        response = await authenticated_client.patch(f"/api/users/{test_user.id}", json=update_data)
 
         assert response.status_code == 200
         data = response.json()
@@ -45,7 +45,7 @@ class TestUsersAPI:
             self, authenticated_client: AsyncClient, test_user
     ):
         """GET /users/{id} - получение пользователя по ID"""
-        response = await authenticated_client.get(f"/users/{test_user.id}")
+        response = await authenticated_client.get(f"/api/users/{test_user.id}")
 
         assert response.status_code == 200
         data = response.json()
@@ -58,7 +58,7 @@ class TestUsersAPI:
             self, authenticated_client: AsyncClient, test_user
     ):
         """GET /users/by-username/{username} - получение пользователя по username"""
-        response = await authenticated_client.get(f"/users/by-username/{test_user.username}")
+        response = await authenticated_client.get(f"/api/users/by-username/{test_user.username}")
 
         assert response.status_code == 200
         data = response.json()
@@ -70,7 +70,7 @@ class TestUsersAPI:
             self, authenticated_client: AsyncClient
     ):
         """GET /users/by-username/{username} - пользователь не найден"""
-        response = await authenticated_client.get("/users/by-username/nonexistent_user")
+        response = await authenticated_client.get("/api/users/by-username/nonexistent_user")
 
         assert response.status_code == 404
         data = response.json()
@@ -82,7 +82,7 @@ class TestUsersAPI:
             self, authenticated_client: AsyncClient
     ):
         """GET /users/{id} - пользователь не найден"""
-        response = await authenticated_client.get("/users/999999")
+        response = await authenticated_client.get("/api/users/999999")
 
         assert response.status_code == 404
         data = response.json()
@@ -102,7 +102,7 @@ class TestUsersAPI:
         await db_session.commit()
         await db_session.refresh(test_user2)
 
-        response = await authenticated_client.patch(f"/users/{test_user2.id}", json=update_data)
+        response = await authenticated_client.patch(f"/api/users/{test_user2.id}", json=update_data)
         print(response.json())
 
         assert response.status_code == 403
@@ -117,7 +117,7 @@ class TestUsersAPI:
         """PATCH /users/{id} - пользователь не найден"""
         update_data = {"full_name": "Несуществующий пользователь"}
 
-        response = await authenticated_client.patch("/users/999999", json=update_data)
+        response = await authenticated_client.patch("/api/users/999999", json=update_data)
 
         assert response.status_code == 403  # Сначала проверка на свои права
         # или 404, если проверка проходит, но пользователь не найден
@@ -130,7 +130,7 @@ class TestUsersAPI:
         # Обновляем только одно поле
         update_data = {"phone": "+78887776655"}
 
-        response = await authenticated_client.patch(f"/users/{test_user.id}", json=update_data)
+        response = await authenticated_client.patch(f"/api/users/{test_user.id}", json=update_data)
 
         assert response.status_code == 200
         data = response.json()
@@ -147,7 +147,7 @@ class TestUsersAPI:
         """PATCH /users/{id} - пустой запрос на обновление"""
         update_data = {}
 
-        response = await authenticated_client.patch(f"/users/{test_user.id}", json=update_data)
+        response = await authenticated_client.patch(f"/api/users/{test_user.id}", json=update_data)
         print(response.json())
 
         assert response.status_code == 200  # или 422 если валидация
@@ -175,7 +175,7 @@ class TestUsersAPI:
         await db_session.commit()
         await db_session.refresh(temp_user)
 
-        response = await authenticated_client.delete(f"/users/{temp_user.id}")
+        response = await authenticated_client.delete(f"/api/users/{temp_user.id}")
         print(response.json())
 
         assert response.status_code == 200
@@ -184,7 +184,7 @@ class TestUsersAPI:
         assert data["result"] is True or isinstance(data["result"], dict)
 
         # Проверяем, что пользователь действительно удален
-        response = await authenticated_client.get(f"/users/{temp_user.id}")
+        response = await authenticated_client.get(f"/api/users/{temp_user.id}")
         assert response.status_code == 404
 
     @pytest.mark.asyncio
@@ -192,7 +192,7 @@ class TestUsersAPI:
             self, authenticated_client: AsyncClient
     ):
         """DELETE /users/{id} - пользователь не найден"""
-        response = await authenticated_client.delete("/users/7126832544132")
+        response = await authenticated_client.delete("/api/users/7126832544132")
         print(response.json())
 
         # В зависимости от реализации: 404 если проверка доступа проходит
@@ -206,7 +206,7 @@ class TestUsersAPI:
             self, async_client: AsyncClient
     ):
         """GET /users/me - без аутентификации"""
-        response = await async_client.get("/users/me")
+        response = await async_client.get("/api/users/me")
 
         assert response.status_code == 401
         data = response.json()
@@ -221,7 +221,7 @@ class TestUsersAPI:
             "profile_photo_path": "/uploads/profile_photos/new_photo.jpg"
         }
 
-        response = await authenticated_client.patch(f"/users/{test_user.id}", json=update_data)
+        response = await authenticated_client.patch(f"/api/users/{test_user.id}", json=update_data)
 
         assert response.status_code == 200
         data = response.json()
@@ -233,16 +233,16 @@ class TestUsersAPI:
     ):
         """GET различных эндпоинтов - проверка поиска пользователей"""
         # Поиск по ID
-        response = await authenticated_client.get(f"/users/{test_user.id}")
+        response = await authenticated_client.get(f"/api/users/{test_user.id}")
         assert response.status_code == 200
         assert response.json()["username"] == test_user.username
 
         # Поиск по username
-        response = await authenticated_client.get(f"/users/by-username/{test_user.username}")
+        response = await authenticated_client.get(f"/api/users/by-username/{test_user.username}")
         assert response.status_code == 200
         assert response.json()["username"] == test_user.username
 
         # Текущий пользователь
-        response = await authenticated_client.get("/users/me")
+        response = await authenticated_client.get("/api/users/me")
         assert response.status_code == 200
         assert response.json()["username"] == test_user.username

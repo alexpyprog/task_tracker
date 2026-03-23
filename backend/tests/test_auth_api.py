@@ -17,7 +17,7 @@ class TestAuthAPI:
             "phone": "+79991234567"
         }
 
-        response = await async_client.post("/register", json=user_data)
+        response = await async_client.post("/api/register", json=user_data)
 
         assert response.status_code == 200
         data = response.json()
@@ -44,7 +44,7 @@ class TestAuthAPI:
             "phone": "+79998765432"
         }
 
-        response = await async_client.post("/register", json=user_data)
+        response = await async_client.post("/api/register", json=user_data)
 
         assert response.status_code == 400
         data = response.json()
@@ -59,7 +59,7 @@ class TestAuthAPI:
             "password": "testpassword123"
         }
 
-        response = await async_client.post("/login", json=login_data)
+        response = await async_client.post("/api/login", json=login_data)
 
         assert response.status_code == 200
         data = response.json()
@@ -76,7 +76,7 @@ class TestAuthAPI:
             "password": "wrongpassword"
         }
 
-        response = await async_client.post("/login", json=login_data)
+        response = await async_client.post("/api/login", json=login_data)
 
         assert response.status_code == 401
         data = response.json()
@@ -91,7 +91,7 @@ class TestAuthAPI:
             "password": "password123"
         }
 
-        response = await async_client.post("/login", json=login_data)
+        response = await async_client.post("/api/login", json=login_data)
 
         assert response.status_code == 401
         data = response.json()
@@ -105,12 +105,12 @@ class TestAuthAPI:
             "username": test_user.username,
             "password": "testpassword123"
         }
-        login_response = await async_client.post("/login", json=login_data)
+        login_response = await async_client.post("/api/login", json=login_data)
         refresh_token = login_response.json()["refresh_token"]
 
         # Обновляем токен
         refresh_response = await async_client.post(
-            "/refresh",
+            "/api/refresh",
             json={"refresh_token": refresh_token}
         )
 
@@ -124,7 +124,7 @@ class TestAuthAPI:
     async def test_refresh_token_invalid(self, async_client: AsyncClient):
         """Обновление с невалидным токеном"""
         response = await async_client.post(
-            "/refresh",
+            "/api/refresh",
             json={"refresh_token": "invalid.token.here"}
         )
 
@@ -136,7 +136,7 @@ class TestAuthAPI:
     @pytest.mark.asyncio
     async def test_protected_endpoint_without_token(self, async_client: AsyncClient):
         """Доступ к защищенному эндпоинту без токена"""
-        response = await async_client.get("tasks/my-tasks")
+        response = await async_client.get("/api/tasks/my-tasks")
         print(response)
         print(response.json())
 
@@ -148,7 +148,7 @@ class TestAuthAPI:
     async def test_protected_endpoint_with_invalid_token(self, async_client: AsyncClient):
         """Доступ к защищенному эндпоинту с невалидным токеном"""
         headers = {"Authorization": "Bearer invalid.token.here"}
-        response = await async_client.get("tasks/my-tasks", headers=headers)
+        response = await async_client.get("/api/tasks/my-tasks", headers=headers)
 
         assert response.status_code == 401
         data = response.json()
@@ -159,7 +159,7 @@ class TestAuthAPI:
             self, authenticated_client: AsyncClient, test_task
     ):
         """Доступ к защищенному эндпоинту с валидным токеном"""
-        response = await authenticated_client.get(f"/tasks/{test_task.id}")
+        response = await authenticated_client.get(f"/api/tasks/{test_task.id}")
 
         assert response.status_code == 200
         data = response.json()
