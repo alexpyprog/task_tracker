@@ -20,24 +20,24 @@ jobs:
   # -------------------------------
   build:
     runs-on: ubuntu-latest
+
     steps:
       - uses: actions/checkout@v4
 
-      - name: Set up Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: '3.12'
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
 
-      - name: Install dependencies
-        run: pip install -r backend/requirements.txt
-
-      - name: Build (uvicorn dry run)
+      - name: Build with Docker Compose
         run: |
-          command -v uvicorn    # если нет uvicorn → ошибка → job = failed
-          uvicorn backend.main_for_tests:app --host 127.0.0.1 --port 8000 &
-          sleep 3
-          pkill -f uvicorn || true
+          docker-compose -f docker-compose.yml build
 
+      - name: Test with Docker Compose
+        run: |
+          docker-compose -f docker-compose.yml up -d
+          sleep 10
+          curl -s http://localhost:8000/ping || exit 1
+          curl -s http://localhost:80 || exit 1
+          docker-compose -f docker-compose.yml down
 
       - name: Upload build artifacts
         uses: actions/upload-artifact@v4
