@@ -98,7 +98,7 @@ jobs:
 
       - name: Run tests
         run: |
-          pytest -v
+          pytest backend -v
 
       - name: Upload test artifacts
         uses: actions/upload-artifact@v4
