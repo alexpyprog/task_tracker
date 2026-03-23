@@ -33,11 +33,11 @@ jobs:
 
       - name: Test with Docker Compose
         run: |
-          docker-compose -f docker-compose.yml up -d
+          docker compose -f docker-compose.yml up -d
           sleep 10
           curl -s http://localhost:8000/ping || exit 1
           curl -s http://localhost:80 || exit 1
-          docker-compose -f docker-compose.yml down
+          docker compose -f docker-compose.yml down
 
       - name: Upload build artifacts
         uses: actions/upload-artifact@v4
