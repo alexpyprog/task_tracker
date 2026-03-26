@@ -27,6 +27,8 @@ class Settings:
     allow_methods: list[str] = ["*"]
     allow_headers: list[str] = ["*"]
 
+    frontend_url = os.getenv("FRONTEND_URL")
+
     db_name = os.getenv("DB_NAME")
     db_url = (
         f"postgresql+asyncpg://"

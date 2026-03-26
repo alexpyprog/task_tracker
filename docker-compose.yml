@@ -32,7 +32,6 @@ services:
     container_name: backend
     environment:
       DATABASE_URL: postgresql+asyncpg://user:password@pg:5432/task_tracker
-      ALLOWED_ORIGINS: '["http://localhost:3000", "http://frontend:3000"]'  # Добавляем фронтенд
       JWT_ALGORITHM: RS256
       JWT_EXPIRATION_MINUTES: 30
     networks:
@@ -52,7 +51,7 @@ services:
       context: ./task-tracker-frontend
       dockerfile: Frontend.Dockerfile
       args:
-        - REACT_APP_API_URL=http://localhost:8000
+        - REACT_APP_API_URL=https://t-track-api.avakov.netcraze.pro
     container_name: frontend
     environment:
       - CHOKIDAR_USEPOLLING=true  # Для hot-reload в Docker
@@ -60,7 +59,7 @@ services:
     networks:
       - app-network
     ports:
-      - "80:3000"
+      - "3000:3000"
     depends_on:
       - backend
     restart: unless-stopped

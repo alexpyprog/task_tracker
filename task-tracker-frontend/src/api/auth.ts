@@ -29,4 +29,9 @@ export const authApi = {
     localStorage.removeItem('access_token');
     localStorage.removeItem('refresh_token');
   },
+
+  async verifyPassword(password: string): Promise<{ verified: boolean }> {
+    const response = await axiosInstance.post<{ verified: boolean }>('/verify-password', { password });
+    return response.data;
+  },
 };
