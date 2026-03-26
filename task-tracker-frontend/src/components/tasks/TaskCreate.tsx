@@ -16,17 +16,17 @@ import styles from './TaskCreate.module.css';
 // Схема валидации
 const taskSchema = z.object({
   title: z.string()
-    .min(3, 'Title must be at least 3 characters')
-    .max(100, 'Title must be less than 100 characters'),
+    .min(3, 'Название должно содержать не менее 3 символов')
+    .max(100, 'Название не должно превышать 100 символов'),
   description: z.string()
-    .max(500, 'Description must be less than 500 characters')
+    .max(500, 'Описание не должно превышать 500 символов')
     .optional()
     .nullable(),
   deadline: z.string()
     .optional()
     .nullable(),
   worker_id: z.number()
-    .min(1, 'Please select a worker'),
+    .min(1, 'Выберите исполнителя'),
   status: z.nativeEnum(TaskStatus)
 });
 
@@ -57,7 +57,7 @@ export const TaskCreate: React.FC = () => {
 
   const onSubmit = async (data: TaskFormData) => {
     if (!selectedWorker) {
-      setError('Please select a worker');
+      setError('Выберите исполнителя');
       return;
     }
 
@@ -82,11 +82,11 @@ export const TaskCreate: React.FC = () => {
         status: data.status
       });
 
-      toast.success('Task created successfully!');
+      toast.success('Задача успешно создана!');
       navigate(`/tasks/${newTask.id}`);
     } catch (err: any) {
       setError(err.response?.data?.detail || 'Failed to create task');
-      toast.error('Failed to create task');
+      toast.error('Ошибка создания задачи');
     } finally {
       setIsSubmitting(false);
     }
@@ -112,8 +112,8 @@ export const TaskCreate: React.FC = () => {
     <div className={styles.container}>
       <div className={styles.formCard}>
         <div className={styles.formHeader}>
-          <h1 className={styles.formTitle}>Create New Task</h1>
-          <p className={styles.formSubtitle}>Fill in the details to create a new task</p>
+          <h1 className={styles.formTitle}>Создание задачи</h1>
+          <p className={styles.formSubtitle}>Заполните детали для создания задачи</p>
         </div>
 
         {error && <ErrorAlert message={error} onClose={() => setError('')} />}
@@ -122,13 +122,13 @@ export const TaskCreate: React.FC = () => {
           {/* Title */}
           <div className={styles.formGroup}>
             <label htmlFor="title" className={styles.label}>
-              Title <span className={styles.required}>*</span>
+              Название <span className={styles.required}>*</span>
             </label>
             <input
               type="text"
               id="title"
               className={`${styles.input} ${errors.title ? styles.inputError : ''}`}
-              placeholder="Enter task title"
+              placeholder="Введите название задачи"
               {...register('title')}
               disabled={isSubmitting}
             />
@@ -140,12 +140,12 @@ export const TaskCreate: React.FC = () => {
           {/* Description */}
           <div className={styles.formGroup}>
             <label htmlFor="description" className={styles.label}>
-              Description
+              Описание
             </label>
             <textarea
               id="description"
               className={`${styles.textarea} ${errors.description ? styles.inputError : ''}`}
-              placeholder="Enter task description (optional)"
+              placeholder="Введите описание задачи (необязательно)"
               rows={5}
               {...register('description')}
               disabled={isSubmitting}
@@ -158,7 +158,7 @@ export const TaskCreate: React.FC = () => {
           {/* Worker Selection - теперь с поиском */}
           <div className={styles.formGroup}>
             <label className={styles.label}>
-              Assign to <span className={styles.required}>*</span>
+              Назначить пользователю <span className={styles.required}>*</span>
             </label>
             <Controller
               name="worker_id"
@@ -167,7 +167,7 @@ export const TaskCreate: React.FC = () => {
                 <UserSearch
                   onSelect={handleWorkerSelect}
                   selectedUserId={field.value}
-                  placeholder="Search for a user..."
+                  placeholder="Поиск пользователя..."
                 />
               )}
             />
@@ -179,7 +179,7 @@ export const TaskCreate: React.FC = () => {
           {/* Deadline - с отдельным выбором даты и времени */}
           <div className={styles.formGroup}>
             <label htmlFor="deadline" className={styles.label}>
-              Deadline
+              Дедлайн
             </label>
             <div className={styles.datetimeInputs}>
               <input
@@ -213,7 +213,7 @@ export const TaskCreate: React.FC = () => {
           {/* Status */}
           <div className={styles.formGroup}>
             <label htmlFor="status" className={styles.label}>
-              Status <span className={styles.required}>*</span>
+              Статус <span className={styles.required}>*</span>
             </label>
             <select
               id="status"
@@ -235,7 +235,7 @@ export const TaskCreate: React.FC = () => {
           {/* Status Preview */}
           {selectedStatus && (
             <div className={styles.statusPreview}>
-              <span className={styles.previewLabel}>Preview:</span>
+              <span className={styles.previewLabel}>Предпросмотр:</span>
               <span className={`${styles.statusBadge} ${styles[`status${selectedStatus.replace('_', '')}`]}`}>
                 {selectedStatus.replace('_', ' ')}
               </span>
@@ -250,7 +250,7 @@ export const TaskCreate: React.FC = () => {
               className={styles.cancelButton}
               disabled={isSubmitting}
             >
-              Cancel
+              Отмена
             </button>
             <button
               type="submit"
@@ -260,10 +260,10 @@ export const TaskCreate: React.FC = () => {
               {isSubmitting ? (
                 <>
                   <span className={styles.spinner}></span>
-                  Creating...
+                  Создание...
                 </>
               ) : (
-                'Create Task'
+                'Создать задачу'
               )}
             </button>
           </div>

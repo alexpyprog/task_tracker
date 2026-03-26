@@ -65,7 +65,7 @@ export const TaskList: React.FC = () => {
 
       setTasks(tasksWithUsers);
     } catch (err: any) {
-      setError('Failed to load tasks');
+      setError('Не удалось загрузить задачи');
       console.error(err);
     } finally {
       setIsLoading(false);
@@ -94,13 +94,13 @@ export const TaskList: React.FC = () => {
   const getStatusText = (status: TaskStatus) => {
     switch (status) {
       case TaskStatus.completed:
-        return 'Completed';
+        return 'Выполнена';
       case TaskStatus.in_progress:
-        return 'In Progress';
+        return 'В работе';
       case TaskStatus.created:
-        return 'Created';
+        return 'Создана';
       case TaskStatus.cancelled:
-        return 'Cancelled';
+        return 'Отменена';
       default:
         return status;
     }
@@ -127,7 +127,7 @@ export const TaskList: React.FC = () => {
     <div className={styles.container}>
       <div className={styles.header}>
         <div className={styles.headerTop}>
-          <h1 className={styles.title}>Tasks</h1>
+          <h1 className={styles.title}>Задачи</h1>
           <div className={styles.userInfo}>
             <span className={styles.userName}>{user?.full_name}</span>
             {/* <button onClick={handleLogout} className={styles.logoutButton}>
@@ -143,13 +143,13 @@ export const TaskList: React.FC = () => {
               className={`${styles.viewButton} ${view === 'my-tasks' ? styles.viewButtonActive : ''}`}
               onClick={() => setView('my-tasks')}
             >
-              My Tasks
+              Мои задачи
             </button>
             <button
               className={`${styles.viewButton} ${view === 'created-by-me' ? styles.viewButtonActive : ''}`}
               onClick={() => setView('created-by-me')}
             >
-              Created by Me
+              Созданные мной
             </button>
           </div>
 
@@ -158,7 +158,7 @@ export const TaskList: React.FC = () => {
             onChange={(e) => setFilter(e.target.value as TaskStatus | 'all')}
             className={styles.filterSelect}
           >
-            <option value="all">All Status</option>
+            <option value="all">Все статусы</option>
             {Object.values(TaskStatus).map((status) => (
               <option key={status} value={status}>
                 {getStatusText(status)}
@@ -167,7 +167,7 @@ export const TaskList: React.FC = () => {
           </select>
           
           <Link to="/tasks/create" className={styles.createButton}>
-            + New Task
+            + Новая задача
           </Link>
         </div>
       </div>
@@ -177,14 +177,14 @@ export const TaskList: React.FC = () => {
       {filteredTasks.length === 0 ? (
         <div className={styles.emptyState}>
           <div className={styles.emptyStateIcon}>📋</div>
-          <h3 className={styles.emptyStateTitle}>No tasks found</h3>
+          <h3 className={styles.emptyStateTitle}>Задачи не найдены</h3>
           <p className={styles.emptyStateText}>
             {view === 'my-tasks' 
-              ? "You don't have any tasks assigned to you yet."
-              : "You haven't created any tasks yet."}
+              ? "У вас пока нет назначенных задач."
+              : "Вы пока не создали ни одной задачи."}
           </p>
           <Link to="/tasks/create" className={styles.emptyStateButton}>
-            Create your first task
+            Создать первую задачу
           </Link>
         </div>
       ) : (
@@ -211,12 +211,12 @@ export const TaskList: React.FC = () => {
                 <div className={styles.taskUsers}>
                   {view === 'created-by-me' ? (
                     <div className={styles.userInfo}>
-                      <span className={styles.userLabel}>Assigned to:</span>
+                      <span className={styles.userLabel}>Исполнитель:</span>
                       <span className={styles.userName}>{task.workerName || `User #${task.worker_id}`}</span>
                     </div>
                   ) : (
                     <div className={styles.userInfo}>
-                      <span className={styles.userLabel}>Created by:</span>
+                      <span className={styles.userLabel}>Создатель:</span>
                       <span className={styles.userName}>{task.creatorName || `User #${task.created_by}`}</span>
                     </div>
                   )}

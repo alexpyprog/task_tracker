@@ -1,4 +1,5 @@
 import React from 'react';
+import { EmailVerification } from './components/auth/EmailVerification';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { Toaster } from 'react-hot-toast';
 import { AuthProvider } from './contexts/AuthContext';
@@ -64,6 +65,7 @@ function App() {
             </ProtectedRoute>
           } />
           <Route path="/" element={<Navigate to="/tasks" replace />} />
+          <Route path="/verify-email" element={<EmailVerification />} />
         </Routes>
       </AuthProvider>
     </Router>

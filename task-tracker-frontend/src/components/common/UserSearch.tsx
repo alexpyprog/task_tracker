@@ -13,7 +13,7 @@ interface UserSearchProps {
 export const UserSearch: React.FC<UserSearchProps> = ({
   onSelect,
   selectedUserId,
-  placeholder = 'Search users...',
+  placeholder = 'Поиск пользователей...',
   excludeCurrent = false
 }) => {
   const [isOpen, setIsOpen] = useState(false);
@@ -58,19 +58,29 @@ export const UserSearch: React.FC<UserSearchProps> = ({
       const user = await usersApi.getUser(selectedUserId);
       setSelectedUser(user);
     } catch (error) {
-      console.error('Failed to load selected user:', error);
+      console.error('Не удалось найти выбранного пользователя:', error);
     }
   };
 
   const searchUsers = async () => {
     setIsLoading(true);
     try {
-      const user = await usersApi.getUserByUsername(searchTerm);
-      setUsers(user ? [user] : []);
+        // Получаем всех пользователей (или делаем поиск на бэке)
+        // Пока используем существующий API, но фильтруем на клиенте
+        const allUsers = await usersApi.getAllUsers();
+        
+        // Фильтруем по началу username или full_name
+        const searchLower = searchTerm.toLowerCase();
+        const filtered = allUsers.filter(user => 
+            user.username.toLowerCase().startsWith(searchLower) ||
+            user.full_name.toLowerCase().startsWith(searchLower)
+        );
+        
+        setUsers(filtered);
     } catch (error) {
-      setUsers([]);
+        setUsers([]);
     } finally {
-      setIsLoading(false);
+        setIsLoading(false);
     }
   };
 
@@ -124,18 +134,18 @@ export const UserSearch: React.FC<UserSearchProps> = ({
       {isOpen && (
         <div className={styles.dropdown}>
           {isLoading && (
-            <div className={styles.loading}>Searching...</div>
+            <div className={styles.loading}>Поиск...</div>
           )}
           
           {!isLoading && searchTerm.length < 2 && (
             <div className={styles.hint}>
-              Type at least 2 characters to search
+              Введите минимум 2 символа для поиска
             </div>
           )}
 
           {!isLoading && searchTerm.length >= 2 && users.length === 0 && (
             <div className={styles.noResults}>
-              No users found
+              Пользователи не найдены
             </div>
           )}
 

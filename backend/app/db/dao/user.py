@@ -104,6 +104,7 @@ class UserDAO:
         phone: str | None = None,
         profile_photo_path: str | None = None,
         password: Optional[str] = None,
+        email: str | None = None,
     ) -> None:
         values = {}
         existing_user = await self.get_by_id(session, user_id)
@@ -117,6 +118,8 @@ class UserDAO:
         if password is not None:
             hashed_password = hash_password(password)
             values["hashed_password"] = hashed_password
+        if email is not None:
+            values["email"] = email
 
 
         if not values:
@@ -204,9 +207,7 @@ class UserDAO:
         *,
         organization_id: int | None = None,
         group_id: int | None = None,
-        status: UserStatus | None = None,
-        limit: int = 100,
-        offset: int = 0,
+        status: UserStatus | None = None
     ) -> list[User]:
         stmt = select(User)
 
@@ -217,7 +218,7 @@ class UserDAO:
         if status is not None:
             stmt = stmt.where(User.user_status == status)
 
-        stmt = stmt.limit(limit).offset(offset)
+        stmt = stmt
 
         result = await session.execute(stmt)
         return list(result.scalars())

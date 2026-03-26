@@ -14,8 +14,8 @@ export const PasswordConfirmModal: React.FC<PasswordConfirmModalProps> = ({
   isOpen,
   onClose,
   onConfirm,
-  title = 'Confirm Password',
-  description = 'Please enter your current password to continue.',
+  title = 'Подтверждение пароля',
+  description = 'Введите текущий пароль для продолжения.',
 }) => {
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
@@ -25,7 +25,7 @@ export const PasswordConfirmModal: React.FC<PasswordConfirmModalProps> = ({
 
   const handleConfirm = async () => {
     if (!password) {
-      setError('Password is required');
+      setError('Пароль обязателен');
       return;
     }
 
@@ -37,7 +37,7 @@ export const PasswordConfirmModal: React.FC<PasswordConfirmModalProps> = ({
       await onConfirm();
       handleClose();
     } catch (err: any) {
-      setError(err.response?.data?.detail || 'Invalid password');
+      setError(err.response?.data?.detail || 'Неверный пароль');
     } finally {
       setIsVerifying(false);
     }
@@ -69,7 +69,7 @@ export const PasswordConfirmModal: React.FC<PasswordConfirmModalProps> = ({
             onChange={(e) => setPassword(e.target.value)}
             onKeyPress={handleKeyPress}
             className={`${styles.input} ${error ? styles.inputError : ''}`}
-            placeholder="Enter your current password"
+            placeholder="Введите текущий пароль"
             disabled={isVerifying}
             autoFocus
           />
@@ -82,7 +82,7 @@ export const PasswordConfirmModal: React.FC<PasswordConfirmModalProps> = ({
             className={styles.cancelButton}
             disabled={isVerifying}
           >
-            Cancel
+            Отмена
           </button>
           <button
             onClick={handleConfirm}
@@ -92,10 +92,10 @@ export const PasswordConfirmModal: React.FC<PasswordConfirmModalProps> = ({
             {isVerifying ? (
               <>
                 <span className={styles.spinner}></span>
-                Verifying...
+                Проверка...
               </>
             ) : (
-              'Confirm'
+              'Подтвердить'
             )}
           </button>
         </div>

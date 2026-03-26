@@ -30,12 +30,12 @@ export const Navbar: React.FC = () => {
           <Link to="/tasks" className={styles.logo} onClick={handleLinkClick}>
             TaskTracker
           </Link>
-          <Link to="/tasks" className={styles.navLink}>
-            My Tasks
+          {/* <Link to="/tasks" className={styles.navLink}>
+            Мои задачи
           </Link>
-          <Link to="/tasks/created" className={styles.navLink}>
-            Created by Me
-          </Link>
+          <Link to="/tasks/created-by-me" className={styles.navLink}>
+            Созданные мной
+          </Link> */}
         </div>
 
         <div className={styles.navRight}>
@@ -70,12 +70,12 @@ export const Navbar: React.FC = () => {
               </div>
             </div>
 
-            <Link 
+            {/* <Link 
               to="/tasks" 
               className={styles.mobileNavLink}
               onClick={handleLinkClick}
             >
-              📋 My Tasks
+              📋 Мои задачи
             </Link>
             
             <Link 
@@ -83,15 +83,15 @@ export const Navbar: React.FC = () => {
               className={styles.mobileNavLink}
               onClick={handleLinkClick}
             >
-              ✨ Created by Me
-            </Link>
+              ✨ Созданные мной
+            </Link> */}
             
             <Link 
               to={`/users/${user.id}`} 
               className={styles.mobileNavLink}
               onClick={handleLinkClick}
             >
-              👤 Profile
+              👤 Мой профиль
             </Link>
           </>
         )}

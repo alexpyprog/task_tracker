@@ -34,4 +34,14 @@ export const authApi = {
     const response = await axiosInstance.post<{ verified: boolean }>('/verify-password', { password });
     return response.data;
   },
+
+  async sendVerification(email: string): Promise<{ message: string; email: string }> {
+    const response = await axiosInstance.post('/send-verification', { email });
+    return response.data;
+  },
+
+  async verifyEmail(token: string): Promise<{ verified: boolean; message: string }> {
+    const response = await axiosInstance.post('/verify-email', { token });
+    return response.data;
+  },
 };

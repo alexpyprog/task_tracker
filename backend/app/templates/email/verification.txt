@@ -1,0 +1,15 @@
+TaskTracker - Verify your email
+
+Hello {{ username }},
+
+Thank you for signing up for TaskTracker! Please verify your email address to get full access to the platform.
+
+Click this link to verify your email:
+{{ verification_url }}
+
+This link will expire in 24 hours.
+
+If you didn't create an account with TaskTracker, you can safely ignore this email.
+
+---
+TaskTracker Team

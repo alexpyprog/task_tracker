@@ -63,7 +63,7 @@ export const TaskDetail: React.FC = () => {
         worker_id: taskData.worker_id
       });
     } catch (err: any) {
-      setError('Failed to load task');
+      setError('Ошибка при загрузке задачи');
       console.error(err);
     } finally {
       setIsLoading(false);
@@ -87,7 +87,7 @@ export const TaskDetail: React.FC = () => {
       
       setTask(updatedTask);
       setIsEditing(false);
-      toast.success('Task updated successfully');
+      toast.success('Задача успешно обновлена');
       
       // Перезагружаем информацию о пользователях
       if (updatedTask.created_by !== creator?.id) {
@@ -99,8 +99,8 @@ export const TaskDetail: React.FC = () => {
         setWorker(newWorker);
       }
     } catch (err: any) {
-      setError(err.response?.data?.detail || 'Failed to update task');
-      toast.error('Failed to update task');
+      setError(err.response?.data?.detail || 'Ошибка обновления задачи');
+      toast.error('Ошибка обновления задачи');
     } finally {
       setIsDeleting(false);
     }
@@ -109,7 +109,7 @@ export const TaskDetail: React.FC = () => {
   const handleDelete = async () => {
     if (!task) return;
     
-    if (!window.confirm('Are you sure you want to delete this task?')) {
+    if (!window.confirm('Вы уверены, что хотите удалить эту задачу?')) {
       return;
     }
 
@@ -118,11 +118,11 @@ export const TaskDetail: React.FC = () => {
 
     try {
       await tasksApi.deleteTask(task.id);
-      toast.success('Task deleted successfully');
+      toast.success('Задача успешно удалена');
       navigate('/tasks');
     } catch (err: any) {
-      setError(err.response?.data?.detail || 'Failed to delete task');
-      toast.error('Failed to delete task');
+      setError(err.response?.data?.detail || 'Ошибка удаления задачи');
+      toast.error('Ошибка удаления задачи');
       setIsDeleting(false);
     }
   };
@@ -135,9 +135,9 @@ export const TaskDetail: React.FC = () => {
         status: newStatus
       });
       setTask(updatedTask);
-      toast.success(`Status changed to ${newStatus.replace('_', ' ')}`);
+      toast.success(`Статус задачи изменён на  ${newStatus.replace('_', ' ')}`);
     } catch (err: any) {
-      toast.error('Failed to update status');
+      toast.error('Ошибка изменения статуса');
     }
   };
 
@@ -159,13 +159,13 @@ export const TaskDetail: React.FC = () => {
   const getStatusText = (status: TaskStatus) => {
     switch (status) {
       case TaskStatus.completed:
-        return 'Completed';
+        return 'Завершена';
       case TaskStatus.in_progress:
-        return 'In Progress';
+        return 'В работе';
       case TaskStatus.created:
-        return 'Created';
+        return 'Создана';
       case TaskStatus.cancelled:
-        return 'Cancelled';
+        return 'Отменена';
       default:
         return status;
     }
@@ -183,10 +183,10 @@ export const TaskDetail: React.FC = () => {
       <div className={styles.container}>
         <div className={styles.errorState}>
           <div className={styles.errorIcon}>🔍</div>
-          <h2 className={styles.errorTitle}>Task Not Found</h2>
-          <p className={styles.errorText}>The task you're looking for doesn't exist or you don't have access to it.</p>
+          <h2 className={styles.errorTitle}>Задача не найдена</h2>
+          <p className={styles.errorText}>Задача не существует или у вас нет доступа к ней.</p>
           <Link to="/tasks" className={styles.backButton}>
-            Back to Tasks
+            Назад к задачам
           </Link>
         </div>
       </div>
@@ -200,10 +200,10 @@ export const TaskDetail: React.FC = () => {
         <div className={styles.header}>
           <div className={styles.headerLeft}>
             <Link to="/tasks" className={styles.backLink}>
-              ← Back to Tasks
+              ← Назад к задачам
             </Link>
             <h1 className={styles.title}>
-              {isEditing ? 'Edit Task' : task.title}
+              {isEditing ? 'Редактировать задачу' : task.title}
             </h1>
           </div>
           
@@ -216,14 +216,14 @@ export const TaskDetail: React.FC = () => {
                     className={styles.editButton}
                     disabled={isDeleting}
                   >
-                    ✏️ Edit
+                    ✏️ Редактировать
                   </button>
                   <button
                     onClick={handleDelete}
                     className={styles.deleteButton}
                     disabled={isDeleting}
                   >
-                    {isDeleting ? '...' : '🗑️ Delete'}
+                    {isDeleting ? '...' : '🗑️ Удалить'}
                   </button>
                 </>
               )}
@@ -237,7 +237,7 @@ export const TaskDetail: React.FC = () => {
         {isEditing ? (
           <div className={styles.editForm}>
             <div className={styles.formGroup}>
-              <label className={styles.label}>Title</label>
+              <label className={styles.label}>Название</label>
               <input
                 type="text"
                 value={editForm.title}
@@ -248,7 +248,7 @@ export const TaskDetail: React.FC = () => {
             </div>
 
             <div className={styles.formGroup}>
-              <label className={styles.label}>Description</label>
+              <label className={styles.label}>Описание</label>
               <textarea
                 value={editForm.description}
                 onChange={(e) => setEditForm({ ...editForm, description: e.target.value })}
@@ -259,7 +259,7 @@ export const TaskDetail: React.FC = () => {
             </div>
 
             <div className={styles.formGroup}>
-              <label className={styles.label}>Status</label>
+              <label className={styles.label}>Статус</label>
               <select
                 value={editForm.status}
                 onChange={(e) => setEditForm({ ...editForm, status: e.target.value as TaskStatus })}
@@ -275,7 +275,7 @@ export const TaskDetail: React.FC = () => {
             </div>
 
             <div className={styles.formGroup}>
-              <label className={styles.label}>Deadline</label>
+              <label className={styles.label}>Дедлайн</label>
               <input
                 type="datetime-local"
                 value={editForm.deadline}
@@ -291,14 +291,14 @@ export const TaskDetail: React.FC = () => {
                 className={styles.cancelButton}
                 disabled={isDeleting}
               >
-                Cancel
+                Отмена
               </button>
               <button
                 onClick={handleUpdate}
                 className={styles.saveButton}
                 disabled={isDeleting}
               >
-                {isDeleting ? 'Saving...' : 'Save Changes'}
+                {isDeleting ? 'Сохранение...' : 'Сохранить изменения'}
               </button>
             </div>
           </div>
@@ -307,7 +307,7 @@ export const TaskDetail: React.FC = () => {
             {/* Status Bar */}
             <div className={styles.statusBar}>
               <div className={styles.statusInfo}>
-                <span className={styles.statusLabel}>Current Status:</span>
+                <span className={styles.statusLabel}>Текущий статус:</span>
                 <span className={`${styles.statusBadge} ${getStatusColor(task.status)}`}>
                   {getStatusText(task.status)}
                 </span>
@@ -315,7 +315,7 @@ export const TaskDetail: React.FC = () => {
               
               {canChangeStatus && (
                 <div className={styles.statusActions}>
-                  <span className={styles.changeStatusLabel}>Change status:</span>
+                  <span className={styles.changeStatusLabel}>Изменить статус:</span>
                   <div className={styles.statusButtons}>
                     {Object.values(TaskStatus).map((status) => (
                       status !== task.status && (
@@ -336,42 +336,42 @@ export const TaskDetail: React.FC = () => {
 
             {/* Description */}
             <div className={styles.section}>
-              <h3 className={styles.sectionTitle}>Description</h3>
+              <h3 className={styles.sectionTitle}>Описание</h3>
               <p className={styles.description}>
-                {task.description || 'No description provided.'}
+                {task.description || 'Описание отсутствует.'}
               </p>
             </div>
 
             {/* Details Grid */}
             <div className={styles.detailsGrid}>
               <div className={styles.detailItem}>
-                <span className={styles.detailLabel}>Created by</span>
+                <span className={styles.detailLabel}>Создатель</span>
                 <span className={styles.detailValue}>
                   {creator ? (
                     <Link to={`/users/${creator.id}`} className={styles.userLink}>
                       {creator.full_name} (@{creator.username})
                     </Link>
                   ) : (
-                    `User #${task.created_by}`
+                    `Пользователь #${task.created_by}`
                   )}
                 </span>
               </div>
 
               <div className={styles.detailItem}>
-                <span className={styles.detailLabel}>Assigned to</span>
+                <span className={styles.detailLabel}>Исполнитель</span>
                 <span className={styles.detailValue}>
                   {worker ? (
                     <Link to={`/users/${worker.id}`} className={styles.userLink}>
                       {worker.full_name} (@{worker.username})
                     </Link>
                   ) : (
-                    `User #${task.worker_id}`
+                    `Пользователь #${task.worker_id}`
                   )}
                 </span>
               </div>
 
               <div className={styles.detailItem}>
-                <span className={styles.detailLabel}>Created at</span>
+                <span className={styles.detailLabel}>Создана</span>
                 <span className={styles.detailValue}>
                   {new Date(task.created_at).toLocaleString()}
                 </span>
@@ -379,7 +379,7 @@ export const TaskDetail: React.FC = () => {
 
               {task.deadline && (
                 <div className={styles.detailItem}>
-                  <span className={styles.detailLabel}>Deadline</span>
+                  <span className={styles.detailLabel}>Дедлайн</span>
                   <span className={`${styles.detailValue} ${
                     new Date(task.deadline) < new Date() ? styles.deadlinePassed : ''
                   }`}>
@@ -390,10 +390,10 @@ export const TaskDetail: React.FC = () => {
 
               {task.updated_at && (
                 <div className={styles.detailItem}>
-                  <span className={styles.detailLabel}>Last updated</span>
+                  <span className={styles.detailLabel}>Последнее обновление</span>
                   <span className={styles.detailValue}>
                     {new Date(task.updated_at).toLocaleString()}
-                    {task.updated_by && ` by User #${task.updated_by}`}
+                    {task.updated_by && ` Пользователем #${task.updated_by}`}
                   </span>
                 </div>
               )}

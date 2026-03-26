@@ -1,7 +1,7 @@
 import uuid
 from datetime import datetime
 
-from sqlalchemy import String, Integer, ForeignKey, DateTime, func, Boolean, Enum, UniqueConstraint
+from sqlalchemy import String, Integer, ForeignKey, DateTime, func, Boolean, Enum, UniqueConstraint, Index
 from sqlalchemy.orm import Mapped, mapped_column
 
 from app.core.enums import UserStatus, TaskStatus, ContentTypes, TaskPermission, LogLevel
@@ -15,8 +15,8 @@ class User(Base):  # Done
 
     username: Mapped[str] = mapped_column(String, unique=True)
     full_name: Mapped[str] = mapped_column(String)
-    email: Mapped[str] = mapped_column(String)
-    phone: Mapped[str] = mapped_column(String)
+    email: Mapped[str] = mapped_column(String, unique=True)
+    phone: Mapped[str] = mapped_column(String, unique=True)
     hashed_password: Mapped[bytes] = mapped_column()
     profile_photo_path: Mapped[str] = mapped_column(String, nullable=True)
     verified: Mapped[bool] = mapped_column(Boolean, default=False)
@@ -29,8 +29,8 @@ class User(Base):  # Done
     group_id: Mapped[int] = mapped_column(Integer, ForeignKey("groups.id"), nullable=True)
     user_status: Mapped[UserStatus] = mapped_column(Enum(UserStatus), default=UserStatus.base_user)
 
-    created_at: Mapped[datetime] = mapped_column(DateTime, default=func.now())
-    updated_at: Mapped[datetime] = mapped_column(DateTime, default=func.now(), onupdate=func.now())
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=func.now())
+    updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=func.now(), onupdate=func.now())
 
 
 class Task(Base):
@@ -47,9 +47,36 @@ class Task(Base):
     worker_id: Mapped[int] = mapped_column(Integer, ForeignKey('users.id'))
     status: Mapped[TaskStatus] = mapped_column(Enum(TaskStatus), default=TaskStatus.created)
 
-    created_at: Mapped[datetime] = mapped_column(DateTime, nullable=True, default=func.now())
-    updated_at: Mapped[datetime] = mapped_column(DateTime, nullable=True, onupdate=func.now())
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=True, default=func.now())
+    updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=True, onupdate=func.now())
     updated_by: Mapped[int] = mapped_column(Integer, ForeignKey('users.id'), nullable=True)
+
+
+class EmailConfirmation(Base):
+    __tablename__ = "email_confirmations"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
+
+    user_id: Mapped[int] = mapped_column(
+        Integer,
+        ForeignKey("users.id", ondelete="CASCADE"),
+        nullable=False,
+        index=True
+    )
+    token: Mapped[str] = mapped_column(String, unique=True, nullable=False, index=True)
+    new_email: Mapped[str | None] = mapped_column(String, nullable=True)  # для смены email
+
+    # Добавляем timezone=True
+    expires_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True),
+        nullable=False,
+        default=func.now()
+    )
+
+    __table_args__ = (
+        Index("ix_email_confirmations_expires_at", expires_at),
+    )
 
 
 class Organization(Base):
@@ -60,8 +87,8 @@ class Organization(Base):
     name: Mapped[str] = mapped_column(String, nullable=False, default='New organization')
     director_id: Mapped[int] = mapped_column(Integer, ForeignKey('users.id'))
 
-    created_at: Mapped[datetime] = mapped_column(DateTime, nullable=True)
-    updated_at: Mapped[datetime] = mapped_column(DateTime, nullable=True)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=True)
+    updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=True)
     updated_by: Mapped[int] = mapped_column(Integer, ForeignKey('users.id'))
 
 
@@ -74,8 +101,8 @@ class Group(Base):
     manager_id: Mapped[int] = mapped_column(Integer, ForeignKey('users.id'))
     organization_id: Mapped[int] = mapped_column(Integer, ForeignKey('organizations.id'), nullable=True)
 
-    created_at: Mapped[datetime] = mapped_column(DateTime, nullable=False, default=func.now())
-    updated_at: Mapped[datetime] = mapped_column(DateTime, nullable=True)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False, default=func.now())
+    updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=True)
     updated_by: Mapped[int] = mapped_column(Integer, ForeignKey('users.id'))
 
 
@@ -88,7 +115,7 @@ class TaskHistory(Base):
     old_status: Mapped[TaskStatus] = mapped_column(Enum(TaskStatus))
     new_status: Mapped[TaskStatus] = mapped_column(Enum(TaskStatus))
 
-    changed_at: Mapped[datetime] = mapped_column(DateTime, nullable=False, default=func.now())
+    changed_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False, default=func.now())
     changed_by: Mapped[int] = mapped_column(Integer, ForeignKey('users.id'))
 
 
@@ -102,7 +129,7 @@ class FileAttachment(Base):
     content_type: Mapped[str] = mapped_column(Enum(ContentTypes), nullable=False)
     file_path: Mapped[str] = mapped_column(String, nullable=False)
 
-    updated_at: Mapped[datetime] = mapped_column(DateTime, nullable=True)
+    updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=True)
     updated_by: Mapped[int] = mapped_column(Integer, ForeignKey('users.id'))
 
 
@@ -115,7 +142,7 @@ class Notification(Base):
     message: Mapped[str] = mapped_column(String, nullable=False)
     is_read: Mapped[bool] = mapped_column(Boolean, nullable=False)
 
-    created_at: Mapped[datetime] = mapped_column(DateTime, nullable=True)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=True)
 
 
 class TaskPermissionModel(Base):
@@ -156,7 +183,7 @@ class ApplicationLog(Base):
     entity_id: Mapped[str | None] = mapped_column(String, nullable=True)
 
     created_at: Mapped[datetime] = mapped_column(
-        DateTime,
+        DateTime(timezone=True),
         nullable=False,
         default=func.now()
     )
@@ -178,7 +205,7 @@ class TaskComment(Base):
     text: Mapped[str] = mapped_column(String, nullable=False)
 
     created_at: Mapped[datetime] = mapped_column(
-        DateTime,
+        DateTime(timezone=True),
         nullable=False,
         default=func.now()
     )
@@ -197,7 +224,7 @@ class SubTask(Base):
     is_done: Mapped[bool] = mapped_column(Boolean, default=False)
 
     created_at: Mapped[datetime] = mapped_column(
-        DateTime,
+        DateTime(timezone=True),
         nullable=False,
         default=func.now()
     )
@@ -217,7 +244,7 @@ class TaskTemplate(Base):
 
     created_by: Mapped[int] = mapped_column(ForeignKey("users.id"))
     created_at: Mapped[datetime] = mapped_column(
-        DateTime,
+        DateTime(timezone=True),
         nullable=False,
         default=func.now()
     )

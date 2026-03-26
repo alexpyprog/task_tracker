@@ -36,10 +36,10 @@ export const LoginForm: React.FC = () => {
     <div className={styles.container}>
       <div className={styles.formWrapper}>
         <h1 className={styles.title}>
-          Welcome to <span className={styles.titleAccent}>TaskTracker</span>
+          Добро пожаловать в <span className={styles.titleAccent}>TaskTracker</span>
         </h1>
         
-        <h2 className={styles.subtitle}>Sign in to your account</h2>
+        <h2 className={styles.subtitle}>Вход в аккаунт</h2>
         
         {error && <ErrorAlert message={error} onClose={() => setError('')} />}
         
@@ -51,7 +51,7 @@ export const LoginForm: React.FC = () => {
               value={username}
               onChange={(e) => setUsername(e.target.value)}
               className={`${styles.input} ${error ? styles.inputError : ''}`}
-              placeholder="Username"
+              placeholder="Имя пользователя"
               disabled={isLoading}
               minLength={3}
               maxLength={50}
@@ -65,7 +65,7 @@ export const LoginForm: React.FC = () => {
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               className={`${styles.input} ${error ? styles.inputError : ''}`}
-              placeholder="Password"
+              placeholder="Пароль"
               disabled={isLoading}
               minLength={8}
               maxLength={255}
@@ -77,13 +77,13 @@ export const LoginForm: React.FC = () => {
             disabled={isLoading}
             className={styles.submitButton}
           >
-            {isLoading ? 'Signing in...' : 'Sign in'}
+            {isLoading ? 'Вход...' : 'Войти'}
           </button>
         </form>
         
         <div className={styles.links}>
           <Link to="/register" className={styles.link}>
-            Don't have an account? Sign up
+            Нет аккаунта? Зарегистрироваться
           </Link>
         </div>
       </div>

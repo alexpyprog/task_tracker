@@ -37,10 +37,8 @@ export const usersApi = {
     }
   },
 
-  async getAllUsers(skip = 0, limit = 100): Promise<UserOut[]> {
-    const response = await axiosInstance.get<UserOut[]>('/users/', {
-      params: { skip, limit }
-    });
+  async getAllUsers(): Promise<UserOut[]> {
+    const response = await axiosInstance.get<UserOut[]>('/users/all');
     return response.data;
   },
   

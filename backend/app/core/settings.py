@@ -4,7 +4,7 @@ from pathlib import Path
 
 from dotenv import load_dotenv
 
-# определяем базовую директорию проектаы
+# определяем базовую директорию проекта
 BASE_DIR = Path(__file__).resolve().parent.parent.parent
 
 if os.path.exists(os.path.join(BASE_DIR, ".env.local")):
@@ -28,6 +28,7 @@ class Settings:
     allow_headers: list[str] = ["*"]
 
     frontend_url = os.getenv("FRONTEND_URL")
+    backend_url = os.getenv("BACKEND_URL")
 
     db_name = os.getenv("DB_NAME")
     db_url = (
@@ -38,6 +39,14 @@ class Settings:
         f"{os.getenv('DB_PORT', 5432)}/"
         f"{os.getenv('DB_NAME')}"
     )
+    sync_db_url = (
+        f"postgresql+psycopg2://"
+        f"{os.getenv('DB_USER')}:"
+        f"{os.getenv('DB_PASS')}@"
+        f"localhost:"
+        f"{os.getenv('DB_PORT', 5432)}/"
+        f"{os.getenv('DB_NAME')}"
+    )
     DB_PASSWORD = os.getenv("DB_PASS")
     DB_HOST = os.getenv("DB_HOST")
     DB_PORT = os.getenv("DB_PORT")
@@ -45,6 +54,14 @@ class Settings:
     DB_NAME = os.getenv("DB_NAME")
 
     LOG_ROTATE_DAYS: int = 30
+
+    SMTP_HOST: str = os.getenv("SMTP_HOST", "smtp.gmail.com")
+    SMTP_PORT: int = int(os.getenv("SMTP_PORT", "587"))
+    SMTP_USER: str = os.getenv("SMTP_USER", "")
+    SMTP_PASSWORD: str = os.getenv("SMTP_PASSWORD", "")
+    SMTP_USE_TLS: bool = os.getenv("SMTP_USE_TLS", "true").lower() == "true"
+    SMTP_FROM_EMAIL: str = os.getenv("SMTP_FROM_EMAIL", "noreply@tasktracker.com")
+    SMTP_FROM_NAME: str = os.getenv("SMTP_FROM_NAME", "TaskTracker")
 
 
 settings = Settings()

@@ -1,4 +1,4 @@
-from typing import Any
+from typing import Any, List
 
 from fastapi import APIRouter, Depends, HTTPException, status, FastAPI
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -14,6 +14,20 @@ users_rt = APIRouter(prefix='/api/users', tags=['User'])
 
 def register_router(app: FastAPI):
     app.include_router(users_rt)
+
+
+@users_rt.get(
+    '/all',
+    response_model=List[UserOut]
+)
+async def get_all_users(
+        session: AsyncSession = Depends(get_db),
+        user_dao: UserDAO = Depends(get_user_dao),
+) -> list[UserOut]:
+    all_users = await user_dao.list_users(
+        session,
+    )
+    return [UserOut.model_validate(user) for user in all_users]
 
 
 @users_rt.get(
@@ -115,7 +129,8 @@ async def update_user(
         full_name=data.full_name,
         phone=data.phone,
         profile_photo_path=data.profile_photo_path,
-        password=data.password
+        password=data.password,
+        email=data.email,
     )
 
     if user is None:

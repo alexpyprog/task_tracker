@@ -37,22 +37,22 @@ export const RegisterForm: React.FC = () => {
 
   const validateForm = () => {
     if (formData.password !== formData.confirmPassword) {
-      setError('Passwords do not match');
+      setError('Пароли не совпадают');
       return false;
     }
 
     if (formData.password.length < 8) {
-      setError('Password must be at least 8 characters long');
+      setError('Пароль должен содержать не менее 8 символов');
       return false;
     }
 
     if (formData.username.length < 3) {
-      setError('Username must be at least 3 characters long');
+      setError('Имя пользователя должно содержать не менее 3 символов');
       return false;
     }
 
     if (!formData.email.includes('@')) {
-      setError('Please enter a valid email address');
+      setError('Введите корректный email адрес');
       return false;
     }
 
@@ -74,7 +74,7 @@ export const RegisterForm: React.FC = () => {
       await register(registerData);
       navigate('/tasks');
     } catch (err: any) {
-      setError(err.response?.data?.detail || 'Failed to register');
+      setError(err.response?.data?.detail || 'Ошибка регистрации');
     } finally {
       setIsLoading(false);
     }
@@ -88,17 +88,17 @@ export const RegisterForm: React.FC = () => {
     <div className={styles.container}>
       <div className={styles.formWrapper}>
         <h1 className={styles.title}>
-          Create <span className={styles.titleAccent}>Account</span>
+          Создание <span className={styles.titleAccent}>аккаунта</span>
         </h1>
         
-        <h2 className={styles.subtitle}>Sign up to get started</h2>
+        <h2 className={styles.subtitle}>Зарегистрируйтесь, чтобы начать работу</h2>
         
         {error && <ErrorAlert message={error} onClose={() => setError('')} />}
         
         <form className={styles.form} onSubmit={handleSubmit}>
           <div className={styles.inputGroup}>
             <label htmlFor="username" className={styles.label}>
-              Username
+              Имя пользователя
             </label>
             <input
               type="text"
@@ -108,7 +108,7 @@ export const RegisterForm: React.FC = () => {
               value={formData.username}
               onChange={handleChange}
               className={`${styles.input} ${error ? styles.inputError : ''}`}
-              placeholder="Enter your username"
+              placeholder="Введите имя пользователя"
               disabled={isLoading}
               minLength={3}
               maxLength={50}
@@ -117,7 +117,7 @@ export const RegisterForm: React.FC = () => {
 
           <div className={styles.inputGroup}>
             <label htmlFor="full_name" className={styles.label}>
-              Full Name
+              Полное имя
             </label>
             <input
               type="text"
@@ -127,7 +127,7 @@ export const RegisterForm: React.FC = () => {
               value={formData.full_name}
               onChange={handleChange}
               className={styles.input}
-              placeholder="Enter your full name"
+              placeholder="Введите полное имя"
               disabled={isLoading}
               maxLength={255}
             />
@@ -145,7 +145,7 @@ export const RegisterForm: React.FC = () => {
               value={formData.email}
               onChange={handleChange}
               className={styles.input}
-              placeholder="Enter your email"
+              placeholder="Введите email"
               disabled={isLoading}
               maxLength={255}
             />
@@ -153,7 +153,7 @@ export const RegisterForm: React.FC = () => {
 
           <div className={styles.inputGroup}>
             <label htmlFor="phone" className={styles.label}>
-              Phone
+              Телефон
             </label>
             <input
               type="tel"
@@ -163,7 +163,7 @@ export const RegisterForm: React.FC = () => {
               value={formData.phone}
               onChange={handleChange}
               className={styles.input}
-              placeholder="Enter your phone number"
+              placeholder="Введите номер телефона"
               disabled={isLoading}
               maxLength={30}
             />
@@ -171,7 +171,7 @@ export const RegisterForm: React.FC = () => {
 
           <div className={styles.inputGroup}>
             <label htmlFor="password" className={styles.label}>
-              Password
+              Пароль
             </label>
             <input
               type="password"
@@ -181,7 +181,7 @@ export const RegisterForm: React.FC = () => {
               value={formData.password}
               onChange={handleChange}
               className={`${styles.input} ${error && formData.password !== formData.confirmPassword ? styles.inputError : ''}`}
-              placeholder="Create a password"
+              placeholder="Создайте пароль"
               disabled={isLoading}
               minLength={8}
             />
@@ -189,7 +189,7 @@ export const RegisterForm: React.FC = () => {
 
           <div className={styles.inputGroup}>
             <label htmlFor="confirmPassword" className={styles.label}>
-              Confirm Password
+              Подтверждение пароля
             </label>
             <input
               type="password"
@@ -199,7 +199,7 @@ export const RegisterForm: React.FC = () => {
               value={formData.confirmPassword}
               onChange={handleChange}
               className={`${styles.input} ${error && formData.password !== formData.confirmPassword ? styles.inputError : ''}`}
-              placeholder="Confirm your password"
+              placeholder="Подтвердите пароль"
               disabled={isLoading}
               minLength={8}
             />
@@ -213,10 +213,10 @@ export const RegisterForm: React.FC = () => {
               className={styles.checkbox}
             />
             <label htmlFor="terms" className={styles.termsLabel}>
-              I agree to the{' '}
-              <a href="/terms" className={styles.termsLink}>Terms of Service</a>{' '}
-              and{' '}
-              <a href="/privacy" className={styles.termsLink}>Privacy Policy</a>
+              Я соглашаюсь с {' '}
+              <a href="/terms" className={styles.termsLink}>Условиями пользовения</a>{' '}
+              и{' '}
+              <a href="/privacy" className={styles.termsLink}>Политикой конфиденциальности</a>
             </label>
           </div>
 
@@ -225,15 +225,15 @@ export const RegisterForm: React.FC = () => {
             disabled={isLoading}
             className={styles.submitButton}
           >
-            {isLoading ? 'Creating account...' : 'Sign up'}
+            {isLoading ? 'Создание аккаунта...' : 'Зарегистрироваться'}
           </button>
         </form>
         
         <div className={styles.links}>
           <p className={styles.loginText}>
-            Already have an account?{' '}
+            Уже есть аккаунт?{' '}
             <Link to="/login" className={styles.link}>
-              Sign in
+              Войти
             </Link>
           </p>
         </div>

@@ -1,6 +1,9 @@
+// task-tracker-frontend/src/components/users/ProfilePage.tsx
+
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { usersApi } from '../../api/users';
+import { authApi } from '../../api/auth';
 import { UserOut } from '../../types/auth';
 import { useAuth } from '../../contexts/AuthContext';
 import { LoadingSpinner } from '../common/LoadingSpinner';
@@ -19,6 +22,7 @@ export const ProfilePage: React.FC = () => {
   const [error, setError] = useState('');
   const [isEditing, setIsEditing] = useState(false);
   const [isPasswordModalOpen, setIsPasswordModalOpen] = useState(false);
+  const [isSendingVerification, setIsSendingVerification] = useState(false);
   const [pendingPasswordUpdate, setPendingPasswordUpdate] = useState<string | null>(null);
   const [editForm, setEditForm] = useState({
     full_name: '',
@@ -55,33 +59,43 @@ export const ProfilePage: React.FC = () => {
         confirmPassword: '',
       });
     } catch (err: any) {
-      setError('Failed to load user profile');
+      setError('Не удалось загрузить профиль пользователя');
       console.error(err);
     } finally {
       setIsLoading(false);
     }
   };
 
+  const handleSendVerification = async () => {
+    if (!user) return;
+    
+    setIsSendingVerification(true);
+    try {
+      await authApi.sendVerification(user.email);
+      toast.success('Письмо для подтверждения отправлено! Проверьте почту.');
+    } catch (err: any) {
+      toast.error(err.response?.data?.detail || 'Не удалось отправить письмо подтверждения');
+    } finally {
+      setIsSendingVerification(false);
+    }
+  };
+
   const handleUpdateProfile = async (skipPasswordCheck: boolean = false) => {
     if (!user) return;
 
-    // Проверка на новый пароль
     const hasPasswordChange = editForm.password && editForm.password.length >= 8;
     
     if (hasPasswordChange && !skipPasswordCheck) {
-      // Проверяем совпадение паролей
       if (editForm.password !== editForm.confirmPassword) {
-        toast.error('Passwords do not match');
+        toast.error('Пароли не совпадают');
         return;
       }
       
-      // Сохраняем новый пароль и показываем модальное окно
       setPendingPasswordUpdate(editForm.password);
       setIsPasswordModalOpen(true);
       return;
     }
 
-    // Если пароль не меняется, обновляем без подтверждения
     await performUpdate();
   };
 
@@ -102,7 +116,6 @@ export const ProfilePage: React.FC = () => {
       const updatedUser = await usersApi.updateUser(user.id, updateData);
       setUser(updatedUser);
       
-      // Обновляем контекст если это текущий пользователь
       if (isOwnProfile) {
         await updateUser(updateData);
       }
@@ -110,9 +123,9 @@ export const ProfilePage: React.FC = () => {
       setIsEditing(false);
       setPendingPasswordUpdate(null);
       setEditForm(prev => ({ ...prev, password: '', confirmPassword: '' }));
-      toast.success('Profile updated successfully');
+      toast.success('Профиль успешно обновлен');
     } catch (err: any) {
-      toast.error(err.response?.data?.detail || 'Failed to update profile');
+      toast.error(err.response?.data?.detail || 'Не удалось обновить профиль');
       throw err;
     }
   };
@@ -142,7 +155,7 @@ export const ProfilePage: React.FC = () => {
 
   const handleLogout = () => {
     logout();
-    toast.success('Logged out successfully');
+    toast.success('Выход выполнен успешно');
     navigate('/login');
   };
 
@@ -155,10 +168,10 @@ export const ProfilePage: React.FC = () => {
       <div className={styles.container}>
         <div className={styles.errorState}>
           <div className={styles.errorIcon}>👤</div>
-          <h2 className={styles.errorTitle}>User Not Found</h2>
-          <p className={styles.errorText}>The user you're looking for doesn't exist.</p>
+          <h2 className={styles.errorTitle}>Пользователь не найден</h2>
+          <p className={styles.errorText}>Пользователь не существует.</p>
           <Link to="/tasks" className={styles.backButton}>
-            Back to Tasks
+            Назад к задачам
           </Link>
         </div>
       </div>
@@ -174,8 +187,8 @@ export const ProfilePage: React.FC = () => {
           setPendingPasswordUpdate(null);
         }}
         onConfirm={handlePasswordConfirm}
-        title="Change Password"
-        description="For security, please enter your current password to confirm the password change."
+        title="Смена пароля"
+        description="Для безопасности введите текущий пароль для подтверждения смены пароля."
       />
 
       <div className={styles.container}>
@@ -197,13 +210,8 @@ export const ProfilePage: React.FC = () => {
                 <div className={styles.userMeta}>
                   <span className={styles.username}>@{user.username}</span>
                   <span className={`${styles.userStatus} ${getStatusColor(user.user_status)}`}>
-                    {user.user_status.replace('_', ' ')}
+                    {user.user_status === 'base_user' ? 'Пользователь' : user.user_status}
                   </span>
-                  {user.verified && (
-                    <span className={styles.verifiedBadge} title="Verified">
-                      ✓
-                    </span>
-                  )}
                 </div>
               </div>
             </div>
@@ -213,7 +221,7 @@ export const ProfilePage: React.FC = () => {
                 onClick={() => setIsEditing(true)}
                 className={styles.editButton}
               >
-                ✏️ Edit Profile
+                ✏️ Редактировать
               </button>
             )}
           </div>
@@ -224,10 +232,10 @@ export const ProfilePage: React.FC = () => {
           <div className={styles.content}>
             {isEditing ? (
               <div className={styles.editForm}>
-                <h2 className={styles.sectionTitle}>Edit Profile</h2>
+                <h2 className={styles.sectionTitle}>Редактировать профиль</h2>
                 
                 <div className={styles.formGroup}>
-                  <label className={styles.label}>Full Name</label>
+                  <label className={styles.label}>Полное имя</label>
                   <input
                     type="text"
                     value={editForm.full_name}
@@ -247,7 +255,7 @@ export const ProfilePage: React.FC = () => {
                 </div>
 
                 <div className={styles.formGroup}>
-                  <label className={styles.label}>Phone</label>
+                  <label className={styles.label}>Телефон</label>
                   <input
                     type="tel"
                     value={editForm.phone}
@@ -258,31 +266,31 @@ export const ProfilePage: React.FC = () => {
 
                 {/* Секция смены пароля */}
                 <div className={styles.formGroup}>
-                  <label className={styles.label}>New Password (optional)</label>
+                  <label className={styles.label}>Новый пароль (необязательно)</label>
                   <input
                     type="password"
                     value={editForm.password}
                     onChange={(e) => setEditForm({ ...editForm, password: e.target.value })}
                     className={styles.input}
-                    placeholder="Leave blank to keep current password"
+                    placeholder="Оставьте пустым, чтобы оставить текущий пароль"
                   />
                 </div>
 
                 {editForm.password && (
                   <div className={styles.formGroup}>
-                    <label className={styles.label}>Confirm New Password</label>
+                    <label className={styles.label}>Подтвердите новый пароль</label>
                     <input
                       type="password"
                       value={editForm.confirmPassword}
                       onChange={(e) => setEditForm({ ...editForm, confirmPassword: e.target.value })}
                       className={styles.input}
-                      placeholder="Confirm your new password"
+                      placeholder="Подтвердите новый пароль"
                     />
                     {editForm.password !== editForm.confirmPassword && editForm.confirmPassword && (
-                      <div className={styles.errorText}>Passwords do not match</div>
+                      <div className={styles.errorText}>Пароли не совпадают</div>
                     )}
                     {editForm.password.length < 8 && editForm.password.length > 0 && (
-                      <div className={styles.errorText}>Password must be at least 8 characters</div>
+                      <div className={styles.errorText}>Пароль должен содержать не менее 8 символов</div>
                     )}
                   </div>
                 )}
@@ -302,40 +310,67 @@ export const ProfilePage: React.FC = () => {
                     }}
                     className={styles.cancelButton}
                   >
-                    Cancel
+                    Отмена
                   </button>
                   <button
                     onClick={() => handleUpdateProfile()}
                     className={styles.saveButton}
                     disabled={editForm.password !== editForm.confirmPassword}
                   >
-                    Save Changes
+                    Сохранить изменения
                   </button>
                 </div>
               </div>
             ) : (
               <div className={styles.infoSection}>
-                <h2 className={styles.sectionTitle}>Profile Information</h2>
+                <h2 className={styles.sectionTitle}>Информация профиля</h2>
                 
                 <div className={styles.infoGrid}>
-                  <div className={styles.infoItem}>
-                    <span className={styles.infoLabel}>Email</span>
-                    <a href={`mailto:${user.email}`} className={styles.infoValue}>
-                      {user.email}
-                    </a>
+                  <div className={styles.emailSection}>
+                    <div className={styles.infoItem}>
+                      <span className={styles.infoLabel}>Email</span>
+                      <div className={styles.infoValue}>
+                        <a href={`mailto:${user.email}`} className={styles.emailLink}>
+                          {user.email}
+                        </a>
+                      </div>
+                    </div>
+                    
+                    {isOwnProfile && (
+                      <div className={styles.verificationWrapper}>
+                        {user.verified ? (
+                          <span className={styles.verifiedBadge}>
+                            ✓ Подтвержден
+                          </span>
+                        ) : (
+                          <>
+                            <span className={styles.unverifiedBadge}>
+                              ⚠ Не подтвержден
+                            </span>
+                            <button
+                              onClick={handleSendVerification}
+                              disabled={isSendingVerification}
+                              className={styles.verifyButton}
+                            >
+                              {isSendingVerification ? 'Отправка...' : 'Подтвердить'}
+                            </button>
+                          </>
+                        )}
+                      </div>
+                    )}
                   </div>
 
                   <div className={styles.infoItem}>
-                    <span className={styles.infoLabel}>Phone</span>
+                    <span className={styles.infoLabel}>Телефон</span>
                     <a href={`tel:${user.phone}`} className={styles.infoValue}>
                       {user.phone}
                     </a>
                   </div>
 
                   <div className={styles.infoItem}>
-                    <span className={styles.infoLabel}>Member since</span>
+                    <span className={styles.infoLabel}>Участник с</span>
                     <span className={styles.infoValue}>
-                      {new Date(user.created_at).toLocaleDateString(undefined, {
+                      {new Date(user.created_at).toLocaleDateString('ru-RU', {
                         year: 'numeric',
                         month: 'long',
                         day: 'numeric'
@@ -344,22 +379,22 @@ export const ProfilePage: React.FC = () => {
                   </div>
 
                   <div className={styles.infoItem}>
-                    <span className={styles.infoLabel}>Last updated</span>
+                    <span className={styles.infoLabel}>Последнее обновление</span>
                     <span className={styles.infoValue}>
-                      {new Date(user.updated_at).toLocaleDateString()}
+                      {new Date(user.updated_at).toLocaleDateString('ru-RU')}
                     </span>
                   </div>
 
                   {user.organization_id && (
                     <div className={styles.infoItem}>
-                      <span className={styles.infoLabel}>Organization ID</span>
+                      <span className={styles.infoLabel}>ID организации</span>
                       <span className={styles.infoValue}>{user.organization_id}</span>
                     </div>
                   )}
 
                   {user.group_id && (
                     <div className={styles.infoItem}>
-                      <span className={styles.infoLabel}>Group ID</span>
+                      <span className={styles.infoLabel}>ID группы</span>
                       <span className={styles.infoValue}>{user.group_id}</span>
                     </div>
                   )}
@@ -370,7 +405,7 @@ export const ProfilePage: React.FC = () => {
                   <div className={styles.logoutSection}>
                     <button onClick={handleLogout} className={styles.logoutButton}>
                       <span className={styles.logoutIcon}>🚪</span>
-                      Sign Out
+                      Выйти
                     </button>
                   </div>
                 )}
