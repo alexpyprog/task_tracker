@@ -2,6 +2,22 @@ import { axiosInstance } from './client';
 import { UserOut, UserUpdate } from '../types/auth';
 
 export const usersApi = {
+  async searchUsers(
+    query: string = '', 
+    groupId?: number | null,
+    skip: number = 0, 
+    limit: number = 20
+  ): Promise<UserOut[]> {
+    const params = new URLSearchParams();
+    if (query) params.append('q', query);
+    if (groupId) params.append('group_id', groupId.toString());
+    params.append('skip', skip.toString());
+    params.append('limit', limit.toString());
+    
+    const response = await axiosInstance.get<UserOut[]>(`/users/search?${params}`);
+    return response.data;
+  },
+
   async getUserByUsername(username: string): Promise<UserOut> {
     const response = await axiosInstance.get<UserOut>(`/users/by-username/${username}`);
     return response.data;
@@ -25,16 +41,6 @@ export const usersApi = {
   async deleteUser(id: number): Promise<{ result: boolean }> {
     const response = await axiosInstance.delete<{ result: boolean }>(`/users/${id}`);
     return response.data;
-  },
-
-  async searchUsers(query: string): Promise<UserOut[]> {
-  // Временно используем getUserByUsername, но в идеале нужен отдельный эндпоинт
-    try {
-      const user = await this.getUserByUsername(query);
-      return user ? [user] : [];
-    } catch {
-      return [];
-    }
   },
 
   async getAllUsers(): Promise<UserOut[]> {

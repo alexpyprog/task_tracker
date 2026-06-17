@@ -1,10 +1,11 @@
 import uuid
 from datetime import datetime
+from typing import List
 
 from sqlalchemy import String, Integer, ForeignKey, DateTime, func, Boolean, Enum, UniqueConstraint, Index
-from sqlalchemy.orm import Mapped, mapped_column
+from sqlalchemy.orm import Mapped, mapped_column, relationship
 
-from app.core.enums import UserStatus, TaskStatus, ContentTypes, TaskPermission, LogLevel
+from app.core.enums import UserStatus, TaskStatus, ContentTypes, TaskPermission, LogLevel, InvitationStatus
 from app.db.base import Base
 
 
@@ -26,11 +27,50 @@ class User(Base):  # Done
         ForeignKey("organizations.id"),
         nullable=True
     )
-    group_id: Mapped[int] = mapped_column(Integer, ForeignKey("groups.id"), nullable=True)
+
+    groups: Mapped[List["Group"]] = relationship(
+        "Group",
+        secondary="user_groups",
+        back_populates="users",
+        lazy="selectin"
+    )
+
     user_status: Mapped[UserStatus] = mapped_column(Enum(UserStatus), default=UserStatus.base_user)
 
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=func.now())
     updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=func.now(), onupdate=func.now())
+
+
+class UserGroup(Base):
+    __tablename__ = "user_groups"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
+
+    user_id: Mapped[int] = mapped_column(
+        Integer,
+        ForeignKey("users.id", ondelete="CASCADE")
+    )
+    group_id: Mapped[int] = mapped_column(
+        Integer,
+        ForeignKey("groups.id", ondelete="CASCADE"),
+    )
+    joined_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=True, default=func.now())
+
+
+class Invitation(Base):
+    __tablename__ = "invitations"
+
+    id: Mapped[str] = mapped_column(
+        String,
+        primary_key=True
+    )
+    from_user: Mapped[int] = mapped_column(Integer)
+    to_user: Mapped[int] = mapped_column(Integer)
+    group_id: Mapped[int] = mapped_column(Integer)
+    status: Mapped[InvitationStatus] = mapped_column(Enum(InvitationStatus))
+    message: Mapped[str | None] = mapped_column(String, nullable=True)
+
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=func.now())
 
 
 class Task(Base):
@@ -46,6 +86,7 @@ class Task(Base):
     created_by: Mapped[int] = mapped_column(Integer, ForeignKey('users.id'))
     worker_id: Mapped[int] = mapped_column(Integer, ForeignKey('users.id'))
     status: Mapped[TaskStatus] = mapped_column(Enum(TaskStatus), default=TaskStatus.created)
+    group_id: Mapped[int | None] = mapped_column(ForeignKey("groups.id"), nullable=True)
 
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=True, default=func.now())
     updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=True, onupdate=func.now())
@@ -98,8 +139,17 @@ class Group(Base):
     id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
 
     name: Mapped[str] = mapped_column(String, nullable=False, default='New group')
+    description: Mapped[str] = mapped_column(String, nullable=False, default='New group')
     manager_id: Mapped[int] = mapped_column(Integer, ForeignKey('users.id'))
     organization_id: Mapped[int] = mapped_column(Integer, ForeignKey('organizations.id'), nullable=True)
+
+    users: Mapped[List["User"]] = relationship(
+        "User",
+        secondary="user_groups",
+        back_populates="groups",
+        lazy="selectin"
+    )
+    icon: Mapped[str] = mapped_column(String, nullable=True)
 
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False, default=func.now())
     updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=True)

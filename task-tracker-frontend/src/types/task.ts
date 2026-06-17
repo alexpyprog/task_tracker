@@ -13,7 +13,21 @@ export interface TaskBase {
   status: TaskStatus;
 }
 
-export interface TaskCreate extends TaskBase {}
+export interface TaskCreate extends TaskBase {
+  group_id?: number | null;  // Добавляем group_id
+}
+
+export interface TaskListOut {
+  id: string;
+  title: string;
+  status: TaskStatus;
+  deadline: string | null;
+  created_at: string;
+  worker_id: number;
+  created_by: number;
+  group_id?: number | null;  // Добавляем
+  group_name?: string | null;  // Добавляем для отображения
+}
 
 export interface TaskUpdate {
   title?: string;
@@ -35,16 +49,6 @@ export interface TaskOut {
   created_at: string;
   updated_by: number | null;
   updated_at: string | null;
-}
-
-export interface TaskListOut {
-  id: string;
-  title: string;
-  status: TaskStatus;
-  deadline: string | null;
-  created_at: string;
-  worker_id: number;
-  created_by: number;
 }
 
 export interface TaskFilter {

@@ -12,7 +12,7 @@ class TaskBase(BaseModel):
     status: TaskStatus = TaskStatus.created
 
 class TaskCreate(TaskBase):
-    pass
+    group_id: Optional[int] = None
 
 
 class TaskUpdate(BaseModel):
@@ -22,6 +22,7 @@ class TaskUpdate(BaseModel):
     worker_id: Optional[int] = None
     status: Optional[TaskStatus] = None
     updated_by: Optional[int] = None
+    group_id: Optional[int] = None
 
 
 class TaskOut(BaseModel):
@@ -35,6 +36,8 @@ class TaskOut(BaseModel):
     created_at: datetime
     updated_by: Optional[int] = None
     updated_at: Optional[datetime] = None
+    group_id: Optional[int] = None
+    group_name: Optional[str] = None  # для удобного отображения
 
     model_config = ConfigDict(from_attributes=True)
 
@@ -47,6 +50,8 @@ class TaskListOut(BaseModel):
     created_at: datetime
     worker_id: int
     created_by: int
+    group_id: Optional[int] = None
+    group_name: Optional[str] = None  # для удобного отображения
 
     model_config = ConfigDict(from_attributes=True)
 

@@ -1,7 +1,7 @@
 from datetime import datetime
 from typing import Optional, List, Dict, Any
 
-from sqlalchemy import select, update, delete, and_, or_, func
+from sqlalchemy import select, update, delete, and_, or_, func, result_tuple
 from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -186,6 +186,27 @@ class TaskDAO:
             "overdue_tasks": overdue
         }
 
+    async def get_by_group_id(
+            self,
+            session: AsyncSession,
+            group_id: int,
+            user_id: Optional[int],
+    ):
+        stmt = select(Task)
+        if user_id:
+            stmt = stmt.where(
+                and_(
+                    Task.group_id == group_id,
+                    Task.worker_id == user_id
+                )
+            )
+        else:
+            stmt = stmt.where(
+                Task.group_id == group_id
+            )
+        result = await session.execute(stmt)
+        return result.scalars().all()
+
     # ---------- create ----------
 
     async def create(
@@ -197,6 +218,7 @@ class TaskDAO:
             deadline: Optional[datetime] = None,
             created_by: int,
             worker_id: int,
+            group_id: Optional[int] = None,
             status: TaskStatus = TaskStatus.created
     ) -> Task:
         task = Task(
@@ -206,6 +228,7 @@ class TaskDAO:
             created_by=created_by,
             worker_id=worker_id,
             status=status,
+            group_id=group_id,
         )
         session.add(task)
         await session.commit()
@@ -386,39 +409,6 @@ class TaskDAO:
         stmt = select(User).where(User.id == user_id)
         result = await session.execute(stmt)
         return result.scalar_one_or_none() is not None
-
-    async def has_permission(
-            self,
-            session: AsyncSession,
-            task_id: str,
-            user_id: int
-    ) -> bool:
-        """Проверяет есть ли у пользователя доступ к задаче"""
-        stmt = select(Task).where(
-            and_(
-                Task.id == task_id,
-                or_(
-                    Task.created_by == user_id,
-                    Task.worker_id == user_id,
-                    # Здесь можно добавить проверку через TaskPermissionModel
-                )
-            )
-        )
-        result = await session.execute(stmt)
-        task = result.scalar_one_or_none()
-
-        # Проверяем, является ли пользователь админом
-        if not task:
-            user_stmt = select(User).where(
-                and_(
-                    User.id == user_id,
-                    User.user_status == UserStatus.admin
-                )
-            )
-            user_result = await session.execute(user_stmt)
-            return user_result.scalar_one_or_none() is not None
-
-        return True
 
     async def can_change_status(
             self,

@@ -1,5 +1,3 @@
-// task-tracker-frontend/src/components/users/ProfilePage.tsx
-
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { usersApi } from '../../api/users';
@@ -264,7 +262,6 @@ export const ProfilePage: React.FC = () => {
                   />
                 </div>
 
-                {/* Секция смены пароля */}
                 <div className={styles.formGroup}>
                   <label className={styles.label}>Новый пароль (необязательно)</label>
                   <input
@@ -326,6 +323,7 @@ export const ProfilePage: React.FC = () => {
                 <h2 className={styles.sectionTitle}>Информация профиля</h2>
                 
                 <div className={styles.infoGrid}>
+                  {/* Email с подтверждением */}
                   <div className={styles.emailSection}>
                     <div className={styles.infoItem}>
                       <span className={styles.infoLabel}>Email</span>
@@ -336,6 +334,7 @@ export const ProfilePage: React.FC = () => {
                       </div>
                     </div>
                     
+                    {/* Блок подтверждения email - только для своего профиля */}
                     {isOwnProfile && (
                       <div className={styles.verificationWrapper}>
                         {user.verified ? (
@@ -352,7 +351,7 @@ export const ProfilePage: React.FC = () => {
                               disabled={isSendingVerification}
                               className={styles.verifyButton}
                             >
-                              {isSendingVerification ? 'Отправка...' : 'Подтвердить'}
+                              {isSendingVerification ? 'Отправка...' : 'Подтвердить email'}
                             </button>
                           </>
                         )}

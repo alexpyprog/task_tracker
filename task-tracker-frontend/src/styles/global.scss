@@ -1,0 +1,241 @@
+// src/styles/global.scss
+@import './theme.scss';
+
+// Дополнительные глобальные стили
+body {
+  margin: 0;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
+    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
+    sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+// Кастомные стили для навбара
+.navbar-custom {
+  background-color: $custom-blue;
+  box-shadow: $box-shadow;
+}
+
+// Кастомные стили для сайдбара
+.sidebar-custom {
+  background-color: $custom-blue;
+  color: white;
+  
+  .nav-link {
+    color: rgba(255, 255, 255, 0.8);
+    
+    &:hover {
+      color: white;
+      background-color: rgba(255, 255, 255, 0.1);
+    }
+    
+    &.active {
+      background-color: $custom-blue-gray;
+      color: white;
+    }
+  }
+}
+
+// Кастомные карточки
+.card-custom {
+  border-radius: $border-radius-lg;
+  box-shadow: $box-shadow;
+  transition: transform 0.2s, box-shadow 0.2s;
+  
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: $box-shadow-lg;
+  }
+}
+
+// Статус бейджи для задач
+.badge-status {
+  &-created {
+    background-color: $warning;
+    color: white;
+  }
+  
+  &-in_progress {
+    background-color: $primary;
+    color: white;
+  }
+  
+  &-completed {
+    background-color: $success;
+    color: white;
+  }
+  
+  &-cancelled {
+    background-color: $danger;
+    color: white;
+  }
+}
+
+// src/styles/global.scss (добавить в конец файла)
+
+// Sidebar styles
+.sidebar-desktop, .sidebar-mobile {
+  .nav-link {
+    color: rgba(255, 255, 255, 0.8);
+    transition: all 0.15s;
+    
+    &:hover {
+      color: white;
+      background-color: rgba(255, 255, 255, 0.1);
+    }
+    
+    &.active {
+      background-color: #1e293b;
+      color: white;
+    }
+  }
+  
+  .accordion-item {
+    background-color: transparent;
+    border: none;
+    
+    .accordion-header {
+      button {
+        background-color: transparent;
+        color: rgba(255, 255, 255, 0.8);
+        padding: 0.5rem 1rem;
+        font-size: 0.875rem;
+        
+        &:hover {
+          background-color: rgba(255, 255, 255, 0.1);
+          color: white;
+        }
+        
+        &:focus {
+          box-shadow: none;
+        }
+        
+        &::after {
+          filter: brightness(0) invert(1);
+        }
+      }
+    }
+    
+    .accordion-body {
+      padding: 0;
+    }
+  }
+}
+
+// Mobile menu button
+.btn-mobile-menu {
+  background-color: #0f2054;
+  border: none;
+  font-size: 1.25rem;
+  
+  &:hover {
+    background-color: #1e293b;
+  }
+}
+
+// Transition utilities
+.transition-transform {
+  transition: transform 0.2s ease;
+}
+
+.translate-x-0 {
+  transform: translateX(0);
+}
+
+.translate-x-n100 {
+  transform: translateX(-100%);
+}
+
+// src/styles/global.scss (добавить в конец)
+
+// Стили для скролла сайдбара
+.sidebar-desktop, .sidebar-mobile {
+  &::-webkit-scrollbar {
+    width: 4px;
+  }
+  
+  &::-webkit-scrollbar-track {
+    background: #1a2d6e;
+  }
+  
+  &::-webkit-scrollbar-thumb {
+    background: #2a3d7e;
+    border-radius: 4px;
+  }
+  
+  &::-webkit-scrollbar-thumb:hover {
+    background: #3a4d8e;
+  }
+}
+
+// Убираем стандартные стили nav-link при наведении
+.nav-link {
+  &:hover {
+    cursor: pointer;
+  }
+}
+
+// src/styles/global.scss (добавить в конец)
+
+// Анимации для мобильного меню
+.transition-transform {
+  transition: transform 0.3s ease;
+}
+
+.translate-x-0 {
+  transform: translateX(0);
+}
+
+.translate-x-n100 {
+  transform: translateX(-100%);
+}
+
+// Для мобильных устройств контент центрирован
+@media (max-width: 768px) {
+  .d-lg-none + div {
+    margin-left: 0 !important;
+  }
+}
+.bg-terracotta {
+  background-color: #b45309 !important;
+}
+
+// src/styles/global.scss (добавить в конец)
+
+// Кастомные карточки для дашборда
+.card-custom {
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  
+  &:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1) !important;
+  }
+}
+
+.border-dashed {
+  border: 2px dashed #dee2e6 !important;
+  
+  &:hover {
+    border-color: #0f2054 !important;
+  }
+}
+
+// src/styles/global.scss (добавить в конец)
+
+.card-hover {
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  
+  &:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1) !important;
+  }
+}
+
+.border-dashed {
+  border: 2px dashed #dee2e6 !important;
+  
+  &:hover {
+    border-color: #0f2054 !important;
+  }
+}

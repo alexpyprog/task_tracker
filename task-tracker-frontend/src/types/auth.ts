@@ -34,7 +34,7 @@ export enum UserStatus {
   base_user = 'base_user',
   admin = 'admin',
   manager = 'manager',
-  director = 'director'
+  member = 'member'
 }
 
 export interface UserOut {

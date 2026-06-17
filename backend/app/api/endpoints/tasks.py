@@ -6,9 +6,11 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.core.enums import TaskPermission
 from app.core.security import get_current_user
 from app.db.base import get_db
+from app.db.dao.group import GroupDAO
 from app.db.dao.task import TaskDAO
 from app.db.dao.task_permission import TaskPermissionDAO
 from app.db.models import User
+from app.dependencies.groups import get_group_dao
 from app.dependencies.permissions import get_permission_dao
 from app.dependencies.task import get_task_dao
 from app.models.task_schema import TaskOut, TaskCreate, TaskListOut, TaskUpdate
@@ -88,6 +90,34 @@ async def get_created_by_me(
 
 
 @tasks_rt.get(
+    "/by-group",
+    response_model=List[TaskListOut],
+    description='Получить все задачи группы'
+)
+async def get_tasks_by_group(
+        group_id: int = Query(..., description="ID группы"),
+        skip: int = Query(0, ge=0),
+        limit: int = Query(100, ge=1, le=1000),
+        session: AsyncSession = Depends(get_db),
+        task_dao: TaskDAO = Depends(get_task_dao),
+        group_dao: GroupDAO = Depends(get_group_dao),
+        current_user: User = Depends(get_current_user),
+) -> List[TaskListOut]:
+    """Получить все задачи группы (требует членства в группе)"""
+    # Проверяем, что пользователь состоит в группе
+    if not await group_dao.is_member(session, group_id=group_id, user_id=current_user.id):
+        raise HTTPException(status_code=403, detail="Forbidden")
+
+    # Получаем все задачи группы
+    tasks = await task_dao.get_by_group_id(session, group_id=group_id, user_id=None)
+
+    # Применяем пагинацию
+    tasks = tasks[skip:skip + limit]
+
+    return [TaskListOut.model_validate(task) for task in tasks]
+
+
+@tasks_rt.get(
     "/{task_id}",
     response_model=TaskOut,
     description='Получить задачу по ID (требует аутентификации)'
@@ -143,11 +173,13 @@ async def create_task(
         task_data: TaskCreate,
         session: AsyncSession = Depends(get_db),
         task_dao: TaskDAO = Depends(get_task_dao),
+        group_dao: GroupDAO = Depends(get_group_dao),
         current_user: User = Depends(get_current_user),
         permission_dao: TaskPermissionDAO = Depends(get_permission_dao)
 ) -> TaskOut:
     """
     Создать новую задачу (требует аутентификации)
+    :param group_dao: Group DAO. Automatically populated.
     :param permission_dao: task permission DAO. Automatically populated.
     :param task_data: Full dataset of the TaskCreate model
     :param session: Database session. Automatically populated.
@@ -161,6 +193,19 @@ async def create_task(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="Worker not found",
         )
+    # После проверки существования исполнителя
+    if task_data.group_id:
+        # Проверяем, является ли исполнитель членом группы
+        is_member = await group_dao.is_member(
+            session,
+            group_id=task_data.group_id,
+            user_id=task_data.worker_id
+        )
+        if not is_member:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Worker must be a member of the group"
+            )
 
     # Создаем задачу от имени текущего пользователя
     # pragma: no cover
@@ -171,7 +216,8 @@ async def create_task(
         deadline=task_data.deadline,
         created_by=current_user.id,
         worker_id=task_data.worker_id,
-        status=task_data.status
+        status=task_data.status,
+        group_id=task_data.group_id,
     )
 
     # Создателю - все права на задачу

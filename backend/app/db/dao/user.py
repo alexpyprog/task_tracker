@@ -4,6 +4,7 @@ from sqlalchemy import select, update, exists, delete
 from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.db.dao.group import GroupDAO
 from app.db.models import User
 from app.core.enums import UserStatus
 from app.logger.file_logger import CustomLogger
@@ -73,7 +74,6 @@ class UserDAO:
         email: str,
         phone: str,
         hashed_password: bytes,
-        group_id: int,
         organization_id: int | None = None,
     ) -> User:
         existing_user = await self.get_by_username(session, username)
@@ -85,7 +85,6 @@ class UserDAO:
             email=email,
             phone=phone,
             hashed_password=hashed_password,
-            group_id=group_id,
             organization_id=organization_id,
         )
         session.add(user)
@@ -223,22 +222,46 @@ class UserDAO:
         result = await session.execute(stmt)
         return list(result.scalars())
 
+    # app/db/dao/user.py (дополнение в delete метод)
 
     async def delete(
             self,
             session: AsyncSession,
             *,
-            user_id: int
+            user_id: int,
+            group_dao: GroupDAO,  # инжектим зависимость
     ) -> bool:
+        """Удалить пользователя с автоматическим переназначением менеджеров"""
         try:
-            user = await self.get_by_id(session, user_id)
-            if not user:
+            # 1. Получаем все группы, где пользователь менеджер
+            managed_groups = await group_dao.get_groups_where_manager(session, user_id)
+
+            # 2. Пытаемся переназначить менеджеров
+            failed_groups = []
+            for group in managed_groups:
+                success = await group_dao.auto_reassign_manager(
+                    session,
+                    group.id,
+                    user_id
+                )
+                if not success:
+                    failed_groups.append(group.id)
+
+            # 3. Если есть группы без менеджера — запрещаем удаление
+            if failed_groups:
+                logger.error(f"Cannot delete user {user_id}: groups without manager: {failed_groups}")
                 return False
-            stmt = delete(User).where(User.id==user_id)
+
+            # 4. Удаляем пользователя (каскад удалит связи в user_groups)
+            stmt = delete(User).where(User.id == user_id)
             await session.execute(stmt)
             await session.commit()
+
+            logger.info(f"User {user_id} deleted with manager reassignment")
+            return True
+
         except SQLAlchemyError as e:
-            logger.error(f'{e}')
+            logger.error(f'Error deleting user {user_id}: {e}')
+            await session.rollback()
             return False
-        return True
 

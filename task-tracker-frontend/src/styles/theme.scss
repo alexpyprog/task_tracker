@@ -1,0 +1,146 @@
+// src/styles/theme.scss
+
+// ========== 1. Ваша цветовая схема ==========
+$custom-blue: #133677;
+$custom-blue-gray: #1f5ab3;
+$custom-terracotta: #d4b31e;
+$custom-wine: #ac1a1a;
+$custom-emerald: #03791d;
+$custom-white: #f8fafc;
+$custom-dark-blue: #1a2a50;
+
+// ========== 2. Светлая тема ==========
+$light-bg: $custom-white;
+$light-text: $custom-dark-blue;
+$light-primary: $custom-blue;
+$light-secondary: $custom-blue-gray;
+$light-accent-terracotta: $custom-terracotta;
+$light-accent-wine: $custom-wine;
+$light-accent-emerald: $custom-emerald;
+
+// ========== 3. Тёмная тема ==========
+$dark-bg: $custom-dark-blue;
+$dark-text: $custom-white;
+$dark-primary: lighten($custom-blue, 15%);
+$dark-secondary: lighten($custom-blue-gray, 15%);
+$dark-accent-terracotta: lighten($custom-terracotta, 20%);
+$dark-accent-wine: lighten($custom-wine, 20%);
+$dark-accent-emerald: lighten($custom-emerald, 20%);
+
+// ========== 4. Переопределение Bootstrap переменных ==========
+// Цвета по умолчанию
+$primary: $custom-blue;
+// $nav: $custom-blue-gray;
+$secondary: $custom-blue-gray;
+$success: $custom-emerald;
+$danger: $custom-wine;
+$warning: $custom-terracotta;
+$black: $custom-dark-blue;
+
+// Серые оттенки
+$gray-100: #f1f5f9;
+$gray-200: #e2e8f0;
+$gray-300: #cbd5e1;
+$gray-400: #94a3b8;
+$gray-500: #64748b;
+$gray-600: #475569;
+$gray-700: #334155;
+$gray-800: #1e293b;
+$gray-900: #0f172a;
+
+// Тени
+$box-shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+$box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px -1px rgba(0, 0, 0, 0.1);
+$box-shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -4px rgba(0, 0, 0, 0.1);
+
+// Скругления
+$border-radius-sm: 0.375rem;
+$border-radius: 0.5rem;
+$border-radius-lg: 0.75rem;
+$border-radius-xl: 1rem;
+$border-radius-pill: 50rem;
+
+// Импорт Bootstrap функций и переменных ДО основного импорта
+@import 'bootstrap/scss/functions';
+@import 'bootstrap/scss/variables';
+@import 'bootstrap/scss/variables-dark';
+@import 'bootstrap/scss/maps';
+@import 'bootstrap/scss/mixins';
+@import 'bootstrap/scss/root';
+
+// Импорт остального Bootstrap
+@import 'bootstrap/scss/bootstrap';
+
+// ========== 5. Кастомные классы для ваших цветов ==========
+.bg-primary-custom { background-color: $custom-blue; }
+.bg-secondary-custom { background-color: $custom-blue-gray; }
+.bg-terracotta { background-color: $custom-terracotta; }
+.bg-wine { background-color: $custom-wine; }
+.bg-emerald { background-color: $custom-emerald; }
+
+.text-primary-custom { color: $custom-blue; }
+.text-secondary-custom { color: $custom-dark-blue; }
+.text-terracotta { color: $custom-terracotta; }
+.text-wine { color: $custom-wine; }
+.text-emerald { color: $custom-emerald; }
+
+.border-primary-custom { border-color: $custom-blue; }
+.border-secondary-custom { border-color: $custom-blue-gray; }
+
+// Кнопки с вашими цветами
+.btn-terracotta {
+  background-color: $custom-terracotta;
+  border-color: $custom-terracotta;
+  color: white;
+  
+  &:hover {
+    background-color: darken($custom-terracotta, 10%);
+    border-color: darken($custom-terracotta, 10%);
+    color: white;
+  }
+}
+
+.btn-wine {
+  background-color: $custom-wine;
+  border-color: $custom-wine;
+  color: white;
+  
+  &:hover {
+    background-color: darken($custom-wine, 10%);
+    border-color: darken($custom-wine, 10%);
+    color: white;
+  }
+}
+
+.btn-emerald {
+  background-color: $custom-emerald;
+  border-color: $custom-emerald;
+  color: white;
+  
+  &:hover {
+    background-color: darken($custom-emerald, 10%);
+    border-color: darken($custom-emerald, 10%);
+    color: white;
+  }
+}
+
+// ========== 6. Переменные CSS для динамической смены темы ==========
+:root {
+  --bs-body-bg: #{$light-bg};
+  --bs-body-color: #{$light-text};
+  --bs-primary: #{$custom-blue};
+  --bs-secondary: #{$custom-blue-gray};
+  --bs-terracotta: #{$custom-terracotta};
+  --bs-wine: #{$custom-wine};
+  --bs-emerald: #{$custom-emerald};
+}
+
+[data-bs-theme="dark"] {
+  --bs-body-bg: #{$dark-bg};
+  --bs-body-color: #{$dark-text};
+  --bs-primary: #{lighten($custom-blue, 15%)};
+  --bs-secondary: #{lighten($custom-blue-gray, 15%)};
+  --bs-terracotta: #{lighten($custom-terracotta, 20%)};
+  --bs-wine: #{lighten($custom-wine, 20%)};
+  --bs-emerald: #{lighten($custom-emerald, 20%)};
+}

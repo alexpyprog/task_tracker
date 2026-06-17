@@ -12,7 +12,7 @@ class UserStatus(enum.Enum):
     base_user = "base_user"
     admin = "admin"
     manager = "manager"
-    director = "director"  # TODO: Убрать эту сущность
+    member = "member"
 
 
 class ContentTypes(enum.Enum):
@@ -58,3 +58,10 @@ class LogLevel(enum.Enum):
     warning = "warning"
     error = "error"
     critical = "critical"
+
+
+class InvitationStatus(enum.Enum):
+    accepted = "accepted"
+    declined = "declined"
+    pending = "pending"
+    expired = "expired"

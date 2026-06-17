@@ -1,6 +1,7 @@
+// src/components/common/PasswordConfirmModal.tsx
 import React, { useState } from 'react';
 import { authApi } from '../../api/auth';
-import styles from './PasswordConfirmModal.module.css';
+import { Modal, Button, Form, Alert, Spinner } from 'react-bootstrap';
 
 interface PasswordConfirmModalProps {
   isOpen: boolean;
@@ -20,8 +21,6 @@ export const PasswordConfirmModal: React.FC<PasswordConfirmModalProps> = ({
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [isVerifying, setIsVerifying] = useState(false);
-
-  if (!isOpen) return null;
 
   const handleConfirm = async () => {
     if (!password) {
@@ -57,49 +56,50 @@ export const PasswordConfirmModal: React.FC<PasswordConfirmModalProps> = ({
   };
 
   return (
-    <div className={styles.modalOverlay} onClick={handleClose}>
-      <div className={styles.modal} onClick={(e) => e.stopPropagation()}>
-        <h3 className={styles.modalTitle}>{title}</h3>
-        <p className={styles.modalDescription}>{description}</p>
+    <Modal show={isOpen} onHide={handleClose} centered>
+      <Modal.Header closeButton>
+        <Modal.Title>{title}</Modal.Title>
+      </Modal.Header>
+      <Modal.Body>
+        <p className="text-muted mb-3">{description}</p>
         
-        <div className={styles.inputGroup}>
-          <input
+        {error && (
+          <Alert variant="danger" className="mb-3">
+            {error}
+          </Alert>
+        )}
+        
+        <Form.Group>
+          <Form.Control
             type="password"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             onKeyPress={handleKeyPress}
-            className={`${styles.input} ${error ? styles.inputError : ''}`}
             placeholder="Введите текущий пароль"
             disabled={isVerifying}
             autoFocus
+            isInvalid={!!error}
           />
-          {error && <div className={styles.errorMessage}>{error}</div>}
-        </div>
-        
-        <div className={styles.modalActions}>
-          <button
-            onClick={handleClose}
-            className={styles.cancelButton}
-            disabled={isVerifying}
-          >
-            Отмена
-          </button>
-          <button
-            onClick={handleConfirm}
-            className={styles.confirmButton}
-            disabled={isVerifying}
-          >
-            {isVerifying ? (
-              <>
-                <span className={styles.spinner}></span>
-                Проверка...
-              </>
-            ) : (
-              'Подтвердить'
-            )}
-          </button>
-        </div>
-      </div>
-    </div>
+          <Form.Control.Feedback type="invalid">
+            {error}
+          </Form.Control.Feedback>
+        </Form.Group>
+      </Modal.Body>
+      <Modal.Footer>
+        <Button variant="secondary" onClick={handleClose} disabled={isVerifying}>
+          Отмена
+        </Button>
+        <Button variant="primary" onClick={handleConfirm} disabled={isVerifying}>
+          {isVerifying ? (
+            <>
+              <Spinner as="span" animation="border" size="sm" className="me-2" />
+              Проверка...
+            </>
+          ) : (
+            'Подтвердить'
+          )}
+        </Button>
+      </Modal.Footer>
+    </Modal>
   );
 };

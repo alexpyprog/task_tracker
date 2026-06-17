@@ -1,9 +1,8 @@
+// src/components/auth/RegisterForm.tsx
 import React, { useState } from 'react';
 import { useAuth } from '../../contexts/AuthContext';
 import { useNavigate, Link } from 'react-router-dom';
-import { ErrorAlert } from '../common/ErrorAlert';
-import { LoadingSpinner } from '../common/LoadingSpinner';
-import styles from './RegisterForm.module.css';
+import { Container, Row, Col, Card, Form, Button, Alert } from 'react-bootstrap';
 
 interface RegisterFormData {
   username: string;
@@ -72,7 +71,7 @@ export const RegisterForm: React.FC = () => {
     try {
       const { confirmPassword, ...registerData } = formData;
       await register(registerData);
-      navigate('/tasks');
+      navigate('/dashboard');
     } catch (err: any) {
       setError(err.response?.data?.detail || 'Ошибка регистрации');
     } finally {
@@ -80,164 +79,150 @@ export const RegisterForm: React.FC = () => {
     }
   };
 
-  if (isLoading) {
-    return <LoadingSpinner fullScreen />;
-  }
-
   return (
-    <div className={styles.container}>
-      <div className={styles.formWrapper}>
-        <h1 className={styles.title}>
-          Создание <span className={styles.titleAccent}>аккаунта</span>
-        </h1>
-        
-        <h2 className={styles.subtitle}>Зарегистрируйтесь, чтобы начать работу</h2>
-        
-        {error && <ErrorAlert message={error} onClose={() => setError('')} />}
-        
-        <form className={styles.form} onSubmit={handleSubmit}>
-          <div className={styles.inputGroup}>
-            <label htmlFor="username" className={styles.label}>
-              Имя пользователя
-            </label>
-            <input
-              type="text"
-              id="username"
-              name="username"
-              required
-              value={formData.username}
-              onChange={handleChange}
-              className={`${styles.input} ${error ? styles.inputError : ''}`}
-              placeholder="Введите имя пользователя"
-              disabled={isLoading}
-              minLength={3}
-              maxLength={50}
-            />
-          </div>
+    <Container fluid className="min-vh-100 d-flex align-items-center justify-content-center bg-light py-5">
+      <Row className="w-100 justify-content-center">
+        <Col xs={12} sm={10} md={8} lg={6} xl={5}>
+          <Card className="shadow-lg border-0 rounded-4">
+            <Card.Body className="p-5">
+              <div className="text-center mb-4">
+                <h1 className="display-6 fw-bold">
+                  Создание <span className="text-primary">аккаунта</span>
+                </h1>
+                <p className="text-muted mt-2">Зарегистрируйтесь, чтобы начать работу</p>
+              </div>
 
-          <div className={styles.inputGroup}>
-            <label htmlFor="full_name" className={styles.label}>
-              Полное имя
-            </label>
-            <input
-              type="text"
-              id="full_name"
-              name="full_name"
-              required
-              value={formData.full_name}
-              onChange={handleChange}
-              className={styles.input}
-              placeholder="Введите полное имя"
-              disabled={isLoading}
-              maxLength={255}
-            />
-          </div>
+              {error && (
+                <Alert variant="danger" onClose={() => setError('')} dismissible>
+                  {error}
+                </Alert>
+              )}
 
-          <div className={styles.inputGroup}>
-            <label htmlFor="email" className={styles.label}>
-              Email
-            </label>
-            <input
-              type="email"
-              id="email"
-              name="email"
-              required
-              value={formData.email}
-              onChange={handleChange}
-              className={styles.input}
-              placeholder="Введите email"
-              disabled={isLoading}
-              maxLength={255}
-            />
-          </div>
+              <Form onSubmit={handleSubmit}>
+                <Form.Group className="mb-3">
+                  <Form.Label>Имя пользователя *</Form.Label>
+                  <Form.Control
+                    type="text"
+                    name="username"
+                    value={formData.username}
+                    onChange={handleChange}
+                    placeholder="Введите имя пользователя"
+                    disabled={isLoading}
+                    required
+                    minLength={3}
+                    maxLength={50}
+                  />
+                </Form.Group>
 
-          <div className={styles.inputGroup}>
-            <label htmlFor="phone" className={styles.label}>
-              Телефон
-            </label>
-            <input
-              type="tel"
-              id="phone"
-              name="phone"
-              required
-              value={formData.phone}
-              onChange={handleChange}
-              className={styles.input}
-              placeholder="Введите номер телефона"
-              disabled={isLoading}
-              maxLength={30}
-            />
-          </div>
+                <Form.Group className="mb-3">
+                  <Form.Label>Полное имя *</Form.Label>
+                  <Form.Control
+                    type="text"
+                    name="full_name"
+                    value={formData.full_name}
+                    onChange={handleChange}
+                    placeholder="Введите полное имя"
+                    disabled={isLoading}
+                    required
+                    maxLength={255}
+                  />
+                </Form.Group>
 
-          <div className={styles.inputGroup}>
-            <label htmlFor="password" className={styles.label}>
-              Пароль
-            </label>
-            <input
-              type="password"
-              id="password"
-              name="password"
-              required
-              value={formData.password}
-              onChange={handleChange}
-              className={`${styles.input} ${error && formData.password !== formData.confirmPassword ? styles.inputError : ''}`}
-              placeholder="Создайте пароль"
-              disabled={isLoading}
-              minLength={8}
-            />
-          </div>
+                <Form.Group className="mb-3">
+                  <Form.Label>Email *</Form.Label>
+                  <Form.Control
+                    type="email"
+                    name="email"
+                    value={formData.email}
+                    onChange={handleChange}
+                    placeholder="Введите email"
+                    disabled={isLoading}
+                    required
+                    maxLength={255}
+                  />
+                </Form.Group>
 
-          <div className={styles.inputGroup}>
-            <label htmlFor="confirmPassword" className={styles.label}>
-              Подтверждение пароля
-            </label>
-            <input
-              type="password"
-              id="confirmPassword"
-              name="confirmPassword"
-              required
-              value={formData.confirmPassword}
-              onChange={handleChange}
-              className={`${styles.input} ${error && formData.password !== formData.confirmPassword ? styles.inputError : ''}`}
-              placeholder="Подтвердите пароль"
-              disabled={isLoading}
-              minLength={8}
-            />
-          </div>
+                <Form.Group className="mb-3">
+                  <Form.Label>Телефон *</Form.Label>
+                  <Form.Control
+                    type="tel"
+                    name="phone"
+                    value={formData.phone}
+                    onChange={handleChange}
+                    placeholder="Введите номер телефона"
+                    disabled={isLoading}
+                    required
+                    maxLength={30}
+                  />
+                </Form.Group>
 
-          <div className={styles.terms}>
-            <input
-              type="checkbox"
-              id="terms"
-              required
-              className={styles.checkbox}
-            />
-            <label htmlFor="terms" className={styles.termsLabel}>
-              Я соглашаюсь с {' '}
-              <a href="/terms" className={styles.termsLink}>Условиями пользовения</a>{' '}
-              и{' '}
-              <a href="/privacy" className={styles.termsLink}>Политикой конфиденциальности</a>
-            </label>
-          </div>
+                <Form.Group className="mb-3">
+                  <Form.Label>Пароль *</Form.Label>
+                  <Form.Control
+                    type="password"
+                    name="password"
+                    value={formData.password}
+                    onChange={handleChange}
+                    placeholder="Создайте пароль"
+                    disabled={isLoading}
+                    required
+                    minLength={8}
+                  />
+                  <Form.Text className="text-muted">
+                    Минимум 8 символов
+                  </Form.Text>
+                </Form.Group>
 
-          <button
-            type="submit"
-            disabled={isLoading}
-            className={styles.submitButton}
-          >
-            {isLoading ? 'Создание аккаунта...' : 'Зарегистрироваться'}
-          </button>
-        </form>
-        
-        <div className={styles.links}>
-          <p className={styles.loginText}>
-            Уже есть аккаунт?{' '}
-            <Link to="/login" className={styles.link}>
-              Войти
-            </Link>
-          </p>
-        </div>
-      </div>
-    </div>
+                <Form.Group className="mb-4">
+                  <Form.Label>Подтверждение пароля *</Form.Label>
+                  <Form.Control
+                    type="password"
+                    name="confirmPassword"
+                    value={formData.confirmPassword}
+                    onChange={handleChange}
+                    placeholder="Подтвердите пароль"
+                    disabled={isLoading}
+                    required
+                    minLength={8}
+                  />
+                </Form.Group>
+
+                <Form.Group className="mb-4">
+                  <Form.Check
+                    type="checkbox"
+                    id="terms"
+                    required
+                    label={
+                      <>
+                        Я соглашаюсь с{' '}
+                        <a href="/terms" className="text-primary">Условиями пользования</a>{' '}
+                        и{' '}
+                        <a href="/privacy" className="text-primary">Политикой конфиденциальности</a>
+                      </>
+                    }
+                  />
+                </Form.Group>
+
+                <Button
+                  type="submit"
+                  variant="primary"
+                  className="w-100 py-2 fw-semibold"
+                  disabled={isLoading}
+                >
+                  {isLoading ? 'Создание аккаунта...' : 'Зарегистрироваться'}
+                </Button>
+              </Form>
+
+              <div className="text-center mt-4">
+                <span className="text-muted">Уже есть аккаунт?</span>{' '}
+                <Link to="/login" className="text-decoration-none">
+                  Войти
+                </Link>
+              </div>
+            </Card.Body>
+          </Card>
+        </Col>
+      </Row>
+    </Container>
   );
 };

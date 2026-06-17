@@ -20,7 +20,7 @@ IGNORE_EXTENSIONS = {
     '.pdf', '.doc', '.docx', '.xls', '.xlsx', '.ppt', '.pptx',
     '.db', '.sqlite', '.sqlite3',
     '.log', '.cache', '.lock',
-    '.whl', '.egg', '.egg-info',
+    '.whl', '.egg', '.egg-info', '.json'
 }
 
 # Директории, которые нужно игнорировать

@@ -129,7 +129,7 @@ export const TaskList: React.FC = () => {
         <div className={styles.headerTop}>
           <h1 className={styles.title}>Задачи</h1>
           <div className={styles.userInfo}>
-            <span className={styles.userName}>{user?.full_name}</span>
+            {/* <span className={styles.userName}>{user?.full_name}</span> */}
             {/* <button onClick={handleLogout} className={styles.logoutButton}>
               <span className={styles.logoutIcon}>🚪</span>
               Logout

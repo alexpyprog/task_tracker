@@ -1,27 +1,45 @@
-import React, { useState, useEffect, useRef } from 'react';
+// src/components/common/UserSearch.tsx
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { usersApi } from '../../api/users';
 import { UserOut } from '../../types/auth';
-import styles from './UserSearch.module.css';
+import { Form, Spinner, ListGroup } from 'react-bootstrap';
+import styles from './UserSearch.module.css'; // Оставляем только для специфических стилей, которые нельзя заменить Bootstrap
 
 interface UserSearchProps {
-  onSelect: (user: UserOut | null) => void;  // Изменяем тип, может быть null
+  onSelect: (user: UserOut | null) => void;
   selectedUserId?: number;
   placeholder?: string;
   excludeCurrent?: boolean;
+  groupId?: number | null;
 }
 
 export const UserSearch: React.FC<UserSearchProps> = ({
   onSelect,
   selectedUserId,
   placeholder = 'Поиск пользователей...',
-  excludeCurrent = false
+  excludeCurrent = false,
+  groupId = null
 }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
   const [users, setUsers] = useState<UserOut[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [selectedUser, setSelectedUser] = useState<UserOut | null>(null);
+  const [currentUserId, setCurrentUserId] = useState<number | null>(null);
   const wrapperRef = useRef<HTMLDivElement>(null);
+  const searchTimeoutRef = useRef<NodeJS.Timeout | undefined>(undefined);
+
+  useEffect(() => {
+    const loadCurrentUser = async () => {
+      try {
+        const user = await usersApi.getCurrentUser();
+        setCurrentUserId(user.id);
+      } catch (error) {
+        console.error('Failed to load current user:', error);
+      }
+    };
+    loadCurrentUser();
+  }, []);
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -42,15 +60,24 @@ export const UserSearch: React.FC<UserSearchProps> = ({
   }, [selectedUserId]);
 
   useEffect(() => {
+    if (searchTimeoutRef.current) {
+      clearTimeout(searchTimeoutRef.current);
+    }
+
     if (searchTerm.length >= 2) {
-      const timer = setTimeout(() => {
-        searchUsers();
+      searchTimeoutRef.current = setTimeout(() => {
+        performSearch();
       }, 300);
-      return () => clearTimeout(timer);
-    } else {
+    } else if (searchTerm.length === 0) {
       setUsers([]);
     }
-  }, [searchTerm]);
+
+    return () => {
+      if (searchTimeoutRef.current) {
+        clearTimeout(searchTimeoutRef.current);
+      }
+    };
+  }, [searchTerm, groupId]);
 
   const loadSelectedUser = async () => {
     if (!selectedUserId) return;
@@ -58,29 +85,33 @@ export const UserSearch: React.FC<UserSearchProps> = ({
       const user = await usersApi.getUser(selectedUserId);
       setSelectedUser(user);
     } catch (error) {
-      console.error('Не удалось найти выбранного пользователя:', error);
+      console.error('Failed to load user:', error);
     }
   };
 
-  const searchUsers = async () => {
+  const performSearch = async () => {
+    if (searchTerm.length < 2) return;
+    
     setIsLoading(true);
     try {
-        // Получаем всех пользователей (или делаем поиск на бэке)
-        // Пока используем существующий API, но фильтруем на клиенте
-        const allUsers = await usersApi.getAllUsers();
-        
-        // Фильтруем по началу username или full_name
-        const searchLower = searchTerm.toLowerCase();
-        const filtered = allUsers.filter(user => 
-            user.username.toLowerCase().startsWith(searchLower) ||
-            user.full_name.toLowerCase().startsWith(searchLower)
-        );
-        
-        setUsers(filtered);
+      const results = await usersApi.searchUsers(
+        searchTerm,
+        groupId,
+        0,
+        20
+      );
+      
+      let filteredResults = results;
+      if (excludeCurrent && currentUserId) {
+        filteredResults = results.filter(user => user.id !== currentUserId);
+      }
+      
+      setUsers(filteredResults);
     } catch (error) {
-        setUsers([]);
+      console.error('Search error:', error);
+      setUsers([]);
     } finally {
-        setIsLoading(false);
+      setIsLoading(false);
     }
   };
 
@@ -88,80 +119,86 @@ export const UserSearch: React.FC<UserSearchProps> = ({
     setSelectedUser(user);
     setSearchTerm('');
     setIsOpen(false);
-    onSelect(user);  // Передаем выбранного пользователя
+    onSelect(user);
   };
 
-  const handleClear = (e: React.MouseEvent) => {
-    e.stopPropagation();
+  const handleClear = () => {
     setSelectedUser(null);
-    onSelect(null);  // Передаем null при очистке
+    onSelect(null);
+  };
+
+  const getPlaceholder = () => {
+    if (groupId) {
+      return 'Поиск по участникам группы...';
+    }
+    return placeholder;
   };
 
   return (
-    <div className={styles.container} ref={wrapperRef}>
-      <div 
-        className={styles.inputWrapper}
-        onClick={() => setIsOpen(true)}
-      >
+    <div className="position-relative w-100" ref={wrapperRef}>
+      <div onClick={() => setIsOpen(true)}>
         {selectedUser ? (
-          <div className={styles.selectedUser}>
-            <span className={styles.selectedUserName}>
-              {selectedUser.full_name}
-            </span>
-            <span className={styles.selectedUserUsername}>
-              @{selectedUser.username}
-            </span>
+          <div className="d-flex align-items-center justify-content-between p-2 border rounded bg-light">
+            <div>
+              <span className="fw-semibold">{selectedUser.full_name}</span>
+              <span className="text-muted ms-2 small">@{selectedUser.username}</span>
+            </div>
             <button
               type="button"
-              className={styles.clearButton}
+              className="btn btn-sm btn-link text-danger text-decoration-none"
               onClick={handleClear}
             >
               ×
             </button>
           </div>
         ) : (
-          <input
+          <Form.Control
             type="text"
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            placeholder={placeholder}
-            className={styles.input}
+            placeholder={getPlaceholder()}
             onFocus={() => setIsOpen(true)}
           />
         )}
       </div>
 
       {isOpen && (
-        <div className={styles.dropdown}>
+        <div className="position-absolute w-100 mt-1 bg-white border rounded shadow-lg" style={{ zIndex: 1000, maxHeight: '300px', overflowY: 'auto' }}>
           {isLoading && (
-            <div className={styles.loading}>Поиск...</div>
+            <div className="text-center py-3">
+              <Spinner animation="border" size="sm" className="me-2" />
+              <span className="text-muted">Поиск...</span>
+            </div>
           )}
           
           {!isLoading && searchTerm.length < 2 && (
-            <div className={styles.hint}>
+            <div className="text-center py-3 text-muted small">
               Введите минимум 2 символа для поиска
             </div>
           )}
 
           {!isLoading && searchTerm.length >= 2 && users.length === 0 && (
-            <div className={styles.noResults}>
-              Пользователи не найдены
+            <div className="text-center py-3 text-muted small">
+              {groupId ? 'В группе нет пользователей с таким именем' : 'Пользователи не найдены'}
             </div>
           )}
 
-          {users.map(user => (
-            <div
-              key={user.id}
-              className={styles.userItem}
-              onClick={() => handleSelect(user)}
-            >
-              <div className={styles.userItemName}>{user.full_name}</div>
-              <div className={styles.userItemDetails}>
-                <span className={styles.userItemUsername}>@{user.username}</span>
-                <span className={styles.userItemEmail}>{user.email}</span>
-              </div>
-            </div>
-          ))}
+          <ListGroup variant="flush">
+            {users.map(user => (
+              <ListGroup.Item
+                key={user.id}
+                action
+                onClick={() => handleSelect(user)}
+                className="d-flex flex-column"
+              >
+                <div className="fw-semibold">{user.full_name}</div>
+                <div className="small text-muted">
+                  <span className="text-primary">@{user.username}</span>
+                  <span className="ms-2">{user.email}</span>
+                </div>
+              </ListGroup.Item>
+            ))}
+          </ListGroup>
         </div>
       )}
     </div>

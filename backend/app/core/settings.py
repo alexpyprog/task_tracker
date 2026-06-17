@@ -63,5 +63,9 @@ class Settings:
     SMTP_FROM_EMAIL: str = os.getenv("SMTP_FROM_EMAIL", "noreply@tasktracker.com")
     SMTP_FROM_NAME: str = os.getenv("SMTP_FROM_NAME", "TaskTracker")
 
+    invitation_per_user_limit: int = 5
+    invitation_cooldown_hours: int = 24
+    invitation_exp_days: int = 7
+
 
 settings = Settings()

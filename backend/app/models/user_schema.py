@@ -1,7 +1,7 @@
 from datetime import datetime
 
 from pydantic import BaseModel, Field, ConfigDict
-from typing import Optional, Union
+from typing import Optional, Union, List
 from app.core.enums import UserStatus
 
 
@@ -16,7 +16,6 @@ class UserBase(BaseModel):
 
 class UserCreate(UserBase):
     password: str = Field(..., min_length=8)
-    group_id: Union[int, None] = Field(default=None)
     organization_id: Union[int, None] = Field(default=None)
 
 
@@ -43,12 +42,17 @@ class UserOut(BaseModel):
     user_status: UserStatus
 
     organization_id: Optional[int]
-    group_id: Optional[int]
+    # group_ids: Optional[List[int]]
 
     created_at: datetime
     updated_at: datetime
 
     model_config = ConfigDict(from_attributes=True)
+
+
+class ListUserOut(UserOut):
+    role: str
+    joined_at: datetime
 
 
 class CurrentUser(BaseModel):

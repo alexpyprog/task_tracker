@@ -4,10 +4,13 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.db.base import get_db
 from app.db.dao.user import UserDAO
 from app.dependencies.user import get_user_dao
+from app.logger.file_logger import CustomLogger
 from app.models.login_schema import UserLogin, TokenPairOut
 from app.models.user_schema import UserOut, UserCreate
 from app.utils.jwt_utils import create_access_token, create_refresh_token, refresh_access_token, decode_token
 from app.utils.pwd_utils import hash_password, verify_password
+
+logger = CustomLogger('Auth')
 
 auth_rt = APIRouter(
     tags=["Auth"],
@@ -43,12 +46,12 @@ async def create_user(
             email=data.email,
             phone=data.phone,
             hashed_password=hash_password(data.password),
-            group_id=data.group_id,
             organization_id=data.organization_id,
         )
 
         return UserOut.model_validate(user)
-    except Exception:
+    except Exception as e:
+        logger.error(f'Failed to create new user: {e}')
         raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
                 detail=f"User with username {data.username} already exists"

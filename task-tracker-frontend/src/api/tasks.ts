@@ -40,4 +40,35 @@ export const tasksApi = {
   async deleteTask(id: string): Promise<void> {
     await axiosInstance.delete(`/tasks/${id}`);
   },
+
+  async getTasksByGroup(groupId: number, skip = 0, limit = 100): Promise<TaskListOut[]> {
+    // Если бэкенд поддерживает фильтрацию по group_id
+    const params = new URLSearchParams();
+    params.append('skip', skip.toString());
+    params.append('limit', limit.toString());
+    params.append('group_id', groupId.toString());
+    
+    const response = await axiosInstance.get<TaskListOut[]>(`/tasks/by-group?${params}`);
+    return response.data;
+  },
+
+  async getAllGroupTasks(groupId: number): Promise<TaskListOut[]> {
+    // Временно используем существующие методы
+    const [myTasks, createdByMe] = await Promise.all([
+      this.getMyTasks(0, 500),
+      this.getCreatedByMe(0, 500),
+    ]);
+    
+    // Объединяем и фильтруем
+    const allTasksMap = new Map<string, TaskListOut>();
+    [...myTasks, ...createdByMe].forEach(task => {
+      if (!allTasksMap.has(task.id)) {
+        allTasksMap.set(task.id, task);
+      }
+    });
+    
+    return Array.from(allTasksMap.values()).filter(
+      task => task.group_id === groupId
+    );
+  },
 };
